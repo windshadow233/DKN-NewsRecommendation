@@ -60,12 +60,11 @@ def user_data_collate(one_batch):
     clicked_news_entities = list(map(lambda x: torch.stack(x), clicked_news_entities))
     candidate_news = {
         'titles': torch.stack(candidate_news_titles),
-        'entities': torch.stack(candidate_news_entities),
-        'is_click': torch.stack(is_click)
+        'entities': torch.stack(candidate_news_entities)
     }
     clicked_news = [{'titles': titles, 'entities': entities}
                     for titles, entities in zip(clicked_news_titles, clicked_news_entities)]
-    return candidate_news, clicked_news
+    return candidate_news, clicked_news, is_click
 
 
 class WordsTokenConverter:
@@ -133,7 +132,7 @@ class UserDataset(Dataset):
             impressions.extend(behavior.Impressions.split(' '))
         # candidate news
         candidate_id, is_click = random.choice(impressions).split('-')
-        is_click = torch.tensor(int(is_click), dtype=torch.long)
+        is_click = torch.tensor(int(is_click), dtype=torch.float32)
         candidate = self.news.loc[candidate_id]
         candidate_title = self.title_converter.wors2token(candidate.Title)
         entities = candidate.Title_Entities
