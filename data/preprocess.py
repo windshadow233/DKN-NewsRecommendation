@@ -16,7 +16,7 @@ news.index.name = 'News_ID'
 news.columns = ['Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title_Entities', 'Abstract_Entities']
 
 if not os.path.exists('title_entities_vocab.json'):
-    entities = ['<pad>']
+    entities = ['<pad>', '<unk>']
     with open("small_train/entity_embedding.vec", "r") as f:
         lines = f.readlines()
         for line in lines:
@@ -33,6 +33,7 @@ if not os.path.exists('title_entities_embedding.pkl'):
         for line in lines:
             line = line.strip().split("\t")
             vec.append(np.array([float(item) for item in line[1:]]))
+        vec.insert(0, np.zeros(shape=(len(vec[-1]))))
         vec.insert(0, np.zeros(shape=(len(vec[-1]))))
         vec = np.stack(vec)
 

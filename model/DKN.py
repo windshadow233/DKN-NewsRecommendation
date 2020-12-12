@@ -18,7 +18,7 @@ class DKN(nn.Module):
           candidate_news:
             {
                 "titles": batch_size * num_words_per_news,
-                "entities":batch_size * num_words_per_news
+                "entities": batch_size * num_words_per_news
             }
           clicked_news:
             [
@@ -31,6 +31,7 @@ class DKN(nn.Module):
 
         Returns:
           click_prob: batch_size
+
         """
 
         candidate_news_vec = self.kcnn(candidate_news)  # (batch_size, len(window_sizes) * num_filter)

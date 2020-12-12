@@ -2,6 +2,7 @@ import torch
 from torch.utils.data import Dataset
 import pandas as pd
 import os
+import random
 from data.utils import *
 
 # os.chdir('..')
@@ -21,7 +22,7 @@ class WordsTokenConverter:
         words = [self.char2idx.get(normalize_string(s), self.char2idx.get('<unk>'))
                  for s in nltk.word_tokenize(words)][:config.num_words_per_news]
         words.extend([self.char2idx.get('<pad>')] * (config.num_words_per_news - len(words)))
-        return words
+        return torch.tensor(words, dtype=torch.long)
 
     def token2words(self, tokens):
         if isinstance(tokens, torch.Tensor):
@@ -44,30 +45,72 @@ class UserDataset(Dataset):
         self.news.index.name = 'News_ID'
         self.news.columns = ['Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title_Entities',
                              'Abstract_Entities']
+        self.users_id = self.behaviors.User_ID.to_list()
 
     def __getitem__(self, item):
+
         """
         Returns:
             {
-                "titles": [[num_words_per_news] * num_news]
-                "entities": [[num_words_per_news] * num_news]
+                "candidate_news": {
+                    "title": num_words_per_news,
+                    "entities": num_words_per_news,
+                    "is_click": 1
+                },
+                "clicked_news": {
+                    "titles": [num_words_per_news * num_clicked_news_per_user],
+                    "entities": [num_words_per_news * num_clicked_news_per_user]
+                }
             }
         """
-        behavior = self.behaviors.iloc[item]
-        user_id = behavior.User_ID
-        history = behavior.History.split(' ')
-        impressions = behavior.Impressions.split(' ')
+
+        user_id = self.users_id[item]
+        behaviors = self.behaviors[self.behaviors.User_ID == user_id]
+        click_history = []
+        impressions = []
         titles = []
         title_entities = []
-        for news_id in history:
-            titles.append(self.news.loc[news_id].Title)
-            title_entities.append(self.entity_converter.wors2token(
-                ' '.join([item.get('WikidataId') for item in json.loads(self.news.loc[news_id].Title_Entities)])))
-        tokens = []
-        for title in titles:
-            token = self.title_converter.wors2token(title)
-            tokens.append(token)
-        return {'titles': tokens, 'entities': title_entities}
+        for i, behavior in behaviors.iterrows():
+            history = behavior.History
+            if not pd.isna(history):
+                click_history.extend(behavior.History.split(' '))
+            impressions.extend(behavior.Impressions.split(' '))
+        # candidate news
+        candidate_id, is_click = random.choice(impressions).split('-')
+        is_click = torch.tensor(int(is_click), dtype=torch.long)
+        candidate = self.news.loc[candidate_id]
+        candidate_title = self.title_converter.wors2token(candidate.Title)
+        entities = candidate.Title_Entities
+        entities = [] if pd.isna(entities) else json.loads(entities)
+        candidate_title_entities = self.entity_converter.wors2token(' '.join([
+            entity.get('WikidataId') for entity in entities
+        ]))
+        # clicked_news
+        for history in click_history[:config.num_clicked_news_per_user]:
+            news = self.news.loc[history]
+            titles.append(self.title_converter.wors2token(news.Title))
+            entities = news.Title_Entities
+            entities = [] if pd.isna(entities) else json.loads(entities)
+            title_entities.append(self.entity_converter.wors2token(' '.join([
+                entity.get('WikidataId') for entity in entities
+            ])))
+        # 若clicked_news不够num_clicked_news_per_user条,补0(待考虑)
+        titles.extend([torch.zeros(size=(config.num_words_per_news,), dtype=torch.long)]
+                      * (config.num_clicked_news_per_user - len(titles)))
+        title_entities.extend([torch.zeros(size=(config.num_words_per_news,), dtype=torch.long)]
+                              * (config.num_clicked_news_per_user - len(title_entities)))
+        to_return = {
+            'candidate_news': {
+                'title': candidate_title,
+                'entities': candidate_title_entities,
+                'is_click': is_click
+            },
+            'clicked_news': {
+                'titles': titles,
+                'entities': title_entities
+            }
+        }
+        return to_return
 
     def __len__(self):
-        return len(self.behaviors)
+        return len(self.users_id)
