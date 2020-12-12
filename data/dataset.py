@@ -12,6 +12,62 @@ from data.utils import *
 from config import config
 
 
+def user_data_collate(one_batch):
+    """
+    Args:
+        one_batch:
+            ({
+                "candidate_news": {
+                    "title": num_words_per_news,
+                    "entities": num_words_per_news,
+                    "is_click": 1
+                },
+                "clicked_news": {
+                    "titles": [num_words_per_news] * num_clicked_news_per_user,
+                    "entities": [num_words_per_news] * num_clicked_news_per_user
+                }
+            } * batch_size)
+    Return:
+        candidate_news:
+            {
+                "titles": batch_size * num_words_per_news,
+                "entities": batch_size * num_words_per_news
+            }
+        clicked_news:
+            [
+                {
+                    "titles": batch_size * num_words_per_news,
+                    "entities": batch_size * num_words_per_news
+                } * num_clicked_news_per_user
+            ]
+        is_click: batch_size
+    """
+    clicked_news_titles = [[] for _ in range(config.num_clicked_news_per_user)]
+    clicked_news_entities = [[] for _ in range(config.num_clicked_news_per_user)]
+    candidate_news_titles = []
+    candidate_news_entities = []
+    is_click = []
+    for data in one_batch:
+        candidate = data['candidate_news']
+        clicked = data['clicked_news']
+        candidate_news_titles.append(candidate['title'])
+        candidate_news_entities.append(candidate['entities'])
+        is_click.append(candidate['is_click'])
+        for i, (clicked_titles, clicked_entities) in enumerate(zip(clicked['titles'], clicked['entities'])):
+            clicked_news_titles[i].append(clicked_titles)
+            clicked_news_entities[i].append(clicked_entities)
+    clicked_news_titles = list(map(lambda x: torch.stack(x), clicked_news_titles))
+    clicked_news_entities = list(map(lambda x: torch.stack(x), clicked_news_entities))
+    candidate_news = {
+        'titles': torch.stack(candidate_news_titles),
+        'entities': torch.stack(candidate_news_entities),
+        'is_click': torch.stack(is_click)
+    }
+    clicked_news = [{'titles': titles, 'entities': entities}
+                    for titles, entities in zip(clicked_news_titles, clicked_news_entities)]
+    return candidate_news, clicked_news
+
+
 class WordsTokenConverter:
     def __init__(self, word_dict='data/title_words_vocab.json'):
         with open(word_dict, 'r') as f:
