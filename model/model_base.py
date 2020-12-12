@@ -11,7 +11,7 @@ class Embedding(nn.Module):
         self.word_embedding = nn.Embedding(config.vocab_size, config.embedding_dim, padding_idx=config.pad_idx)
         with open(entity_embedding, 'rb') as f:
             entity_embedding = pickle.loads(f.read())
-        self.entity_embedding = torch.tensor(entity_embedding).float()
+        self.register_buffer('entity_embedding', torch.tensor(entity_embedding).float())
 
         entity_embedding_dim = self.entity_embedding.shape[1]
         self.transform = nn.Sequential(
