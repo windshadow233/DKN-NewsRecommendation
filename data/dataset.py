@@ -10,6 +10,7 @@ import json
 import nltk
 from data.utils import *
 from config import config
+device = torch.device(config.device)
 
 
 def user_data_collate(one_batch):
@@ -59,11 +60,12 @@ def user_data_collate(one_batch):
     clicked_news_titles = list(map(lambda x: torch.stack(x), clicked_news_titles))
     clicked_news_entities = list(map(lambda x: torch.stack(x), clicked_news_entities))
     candidate_news = {
-        'titles': torch.stack(candidate_news_titles),
-        'entities': torch.stack(candidate_news_entities)
+        'titles': torch.stack(candidate_news_titles).to(device),
+        'entities': torch.stack(candidate_news_entities).to(device)
     }
-    clicked_news = [{'titles': titles, 'entities': entities}
+    clicked_news = [{'titles': titles.to(device), 'entities': entities.to(device)}
                     for titles, entities in zip(clicked_news_titles, clicked_news_entities)]
+    is_click = torch.stack(is_click).to(device)
     return candidate_news, clicked_news, is_click
 
 
