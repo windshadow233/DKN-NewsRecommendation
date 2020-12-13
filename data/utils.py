@@ -12,15 +12,13 @@ def unicode_to_ascii(s):
 
 
 def normalize_string(s):
-    if s in list(string.punctuation):
-        return s
-    s = re.sub('(^[^a-zA-Z])|([^a-zA-Z])$', '', s)
+    s = re.sub('^[^a-zA-Z]', '', s)
     s = unicode_to_ascii(s.lower().strip())
     return s
 
 
 def split_words(words):
-    return [normalize_string(s) for s in nltk.word_tokenize(words)]
+    return [normalize_string(s) for s in nltk.word_tokenize(words) if s not in string.punctuation]
 
 
 def get_entities_from_title(title, entities):
