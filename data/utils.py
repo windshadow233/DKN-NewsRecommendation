@@ -24,7 +24,7 @@ def get_entities_from_title(title, entities):
     :param title: 经分词后的title
     :param entities: 对应的entities
     """
-    result = ['<pad>' for _ in range(len(title))]
+    result = ['<pad>'] * len(title)
     for entity in entities:
         wikiId = entity.get('WikidataId')
         surface_forms = entity.get('SurfaceForms')
