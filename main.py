@@ -5,6 +5,7 @@ from data.dataset import WordsTokenConverter, UserDataset, user_data_collate
 from model.DKN import *
 from config import config
 
+torch.manual_seed(10)
 device = torch.device(config.device)
 model = DKN(config, "data/title_entities_embedding.pkl").to(device)
 converter1 = WordsTokenConverter()
@@ -16,7 +17,7 @@ dataloader = DataLoader(dataset, batch_size=32, shuffle=True, collate_fn=user_da
 for candidate_news, clicked_news, is_click in tqdm.tqdm(dataloader, total=len(dataloader)):
     optimizer.zero_grad()
     is_click = is_click.to(device)
-    pred = model(candidate_news, clicked_news, False)
+    pred = model(candidate_news, clicked_news, sigmoid_at_last=False)
     loss = loss_fcn(pred, is_click)
     print(loss.item())
     loss.backward()
