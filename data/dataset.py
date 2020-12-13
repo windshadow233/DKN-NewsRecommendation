@@ -74,7 +74,7 @@ def user_data_collate(one_batch):
 
 
 class WordsTokenConverter:
-    def __init__(self, word_dict='data/title_words_vocab.json'):
+    def __init__(self, word_dict):
         with open(word_dict, 'r') as f:
             self.char2idx = json.loads(f.read())
         self.idx2char = dict(zip(self.char2idx.values(), self.char2idx.keys()))
