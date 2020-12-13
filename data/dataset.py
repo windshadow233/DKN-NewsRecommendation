@@ -76,8 +76,8 @@ class WordsTokenConverter:
         self.idx2char = dict(zip(self.char2idx.values(), self.char2idx.keys()))
 
     def wors2token(self, words):
-        words = [self.char2idx.get(normalize_string(s), self.char2idx.get('<unk>'))
-                 for s in nltk.word_tokenize(words)][:config.num_words_per_news]
+        words = [self.char2idx.get(s, self.char2idx.get('<unk>'))
+                 for s in words][:config.num_words_per_news]
         words.extend([self.char2idx.get('<pad>')] * (config.num_words_per_news - len(words)))
         return torch.tensor(words, dtype=torch.long)
 
@@ -136,21 +136,21 @@ class UserDataset(Dataset):
         candidate_id, is_click = random.choice(impressions).split('-')
         is_click = torch.tensor(int(is_click), dtype=torch.float32)
         candidate = self.news.loc[candidate_id]
-        candidate_title = self.title_converter.wors2token(candidate.Title)
+        split_title = split_words(candidate.Title)
+        candidate_title = self.title_converter.wors2token(split_title)
         entities = candidate.Title_Entities
         entities = [] if pd.isna(entities) else json.loads(entities)
-        candidate_title_entities = self.entity_converter.wors2token(' '.join([
-            entity.get('WikidataId') for entity in entities
-        ]))
+        entities = get_entities_from_title(split_title, entities)
+        candidate_title_entities = self.entity_converter.wors2token(entities)
         # clicked_news
         for history in click_history[:config.num_clicked_news_per_user]:
             news = self.news.loc[history]
-            titles.append(self.title_converter.wors2token(news.Title))
+            split_title = split_words(news.Title)
+            titles.append(self.title_converter.wors2token(split_title))
             entities = news.Title_Entities
             entities = [] if pd.isna(entities) else json.loads(entities)
-            title_entities.append(self.entity_converter.wors2token(' '.join([
-                entity.get('WikidataId') for entity in entities
-            ])))
+            entities = get_entities_from_title(split_title, entities)
+            title_entities.append(self.entity_converter.wors2token(entities))
         # 若clicked_news不够num_clicked_news_per_user条,补0(待考虑)
         titles.extend([torch.zeros(size=(config.num_words_per_news,), dtype=torch.long)]
                       * (config.num_clicked_news_per_user - len(titles)))

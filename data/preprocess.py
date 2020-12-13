@@ -21,7 +21,7 @@ if not os.path.exists('title_entities_vocab.json'):
         lines = f.readlines()
         for line in lines:
             line = line.strip().split("\t")
-            entities.append(line[0].lower())
+            entities.append(line[0])
     entities = dict(zip(entities, range(len(entities))))
     with open('title_entities_vocab.json', 'w') as f:
         f.write(json.dumps(entities))
