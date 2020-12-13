@@ -16,7 +16,7 @@ optimizer = Adam(model.parameters(), lr=2e-4, betas=(0.5, 0.99))
 dataloader = DataLoader(dataset, batch_size=32, shuffle=True, collate_fn=user_data_collate)
 for candidate_news, clicked_news, is_click in tqdm.tqdm(dataloader, total=len(dataloader)):
     optimizer.zero_grad()
-    pred = model(candidate_news, clicked_news, sigmoid_at_last=False)
+    pred = model(candidate_news, clicked_news, sigmoid_at_end=False)
     loss = loss_fcn(pred, is_click)
     print(loss.item())
     loss.backward()
