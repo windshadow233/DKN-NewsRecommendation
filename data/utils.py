@@ -20,10 +20,9 @@ def split_words(words):
 
 def get_entities_from_title(title, entities):
     """
-    此函数将title每个单词对应到一个entity(若不存在对应则对应到0)
-    :param title:
-    :param entities:
-    :return:
+    此函数将title每个单词对应到一个entity(若不存在对应则对应到<pad>)
+    :param title: 经分词后的title
+    :param entities: 对应的entities
     """
     result = ['<pad>' for _ in range(len(title))]
     for entity in entities:
