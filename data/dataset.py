@@ -102,7 +102,7 @@ class UserDataset(Dataset):
         self.news.index.name = 'News_ID'
         self.news.columns = ['Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title_Entities',
                              'Abstract_Entities']
-        self.users_id = self.behaviors.User_ID.to_list()
+        self.users_id = self.behaviors.User_ID.unique().to_list()
 
     def __getitem__(self, item):
 
