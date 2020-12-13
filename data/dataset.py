@@ -23,10 +23,12 @@ def user_data_collate(one_batch):
                     "entities": num_words_per_news,
                     "is_click": 1
                 },
-                "clicked_news": {
-                    "titles": [num_words_per_news] * num_clicked_news_per_user,
-                    "entities": [num_words_per_news] * num_clicked_news_per_user
-                }
+                "clicked_news": [
+                    {
+                        "title": num_words_per_news,
+                        "entities": num_words_per_news
+                    } * num_clicked_news_per_user
+                ]
             } * batch_size)
     Return:
         candidate_news:
@@ -54,7 +56,9 @@ def user_data_collate(one_batch):
         candidate_news_titles.append(candidate['title'])
         candidate_news_entities.append(candidate['entities'])
         is_click.append(candidate['is_click'])
-        for i, (clicked_titles, clicked_entities) in enumerate(zip(clicked['titles'], clicked['entities'])):
+        for i, one_clicked in enumerate(clicked):
+            clicked_titles = one_clicked['title']
+            clicked_entities = one_clicked['entities']
             clicked_news_titles[i].append(clicked_titles)
             clicked_news_entities[i].append(clicked_entities)
     clicked_news_titles = list(map(lambda x: torch.stack(x), clicked_news_titles))
@@ -114,10 +118,12 @@ class UserDataset(Dataset):
                     "entities": num_words_per_news,
                     "is_click": 1
                 },
-                "clicked_news": {
-                    "titles": [num_words_per_news * num_clicked_news_per_user],
-                    "entities": [num_words_per_news * num_clicked_news_per_user]
-                }
+                "clicked_news": [
+                    {
+                        "title": num_words_per_news,
+                        "entities": num_words_per_news
+                    } * num_clicked_news_per_user
+                ]
             }
         """
 
@@ -125,8 +131,6 @@ class UserDataset(Dataset):
         behaviors = self.behaviors[self.behaviors.User_ID == user_id]
         click_history = []
         impressions = []
-        titles = []
-        title_entities = []
         for i, behavior in behaviors.iterrows():
             history = behavior.History
             if not pd.isna(history):
@@ -143,29 +147,28 @@ class UserDataset(Dataset):
         entities = get_entities_from_title(split_title, entities)
         candidate_title_entities = self.entity_converter.wors2token(entities)
         # clicked_news
+        clicked_news = []
         for history in click_history[:config.num_clicked_news_per_user]:
+            to_add = {}
             news = self.news.loc[history]
             split_title = split_words(news.Title)
-            titles.append(self.title_converter.wors2token(split_title))
             entities = news.Title_Entities
             entities = [] if pd.isna(entities) else json.loads(entities)
             entities = get_entities_from_title(split_title, entities)
-            title_entities.append(self.entity_converter.wors2token(entities))
+            to_add['title'] = self.title_converter.wors2token(split_title)
+            to_add['entities'] = self.entity_converter.wors2token(entities)
+            clicked_news.append(to_add)
         # 若clicked_news不够num_clicked_news_per_user条,补0(待考虑)
-        titles.extend([torch.zeros(size=(config.num_words_per_news,), dtype=torch.long)]
-                      * (config.num_clicked_news_per_user - len(titles)))
-        title_entities.extend([torch.zeros(size=(config.num_words_per_news,), dtype=torch.long)]
-                              * (config.num_clicked_news_per_user - len(title_entities)))
+        pad_vec = torch.zeros(config.num_words_per_news, dtype=torch.long)
+        clicked_news.extend([{'title': pad_vec, 'entities': pad_vec}
+                             for _ in range(config.num_clicked_news_per_user - len(clicked_news))])
         to_return = {
             'candidate_news': {
                 'title': candidate_title,
                 'entities': candidate_title_entities,
                 'is_click': is_click
             },
-            'clicked_news': {
-                'titles': titles,
-                'entities': title_entities
-            }
+            'clicked_news': clicked_news
         }
         return to_return
 
