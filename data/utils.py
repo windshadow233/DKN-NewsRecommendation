@@ -15,7 +15,7 @@ def normalize_string(s):
 
 
 def split_words(words):
-    return [normalize_string(s) for s in nltk.word_tokenize(words)]
+    return [normalize_string(s) for s in nltk.casual_tokenize(words)]
 
 
 def get_entities_from_title(title, entities):

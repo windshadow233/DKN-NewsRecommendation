@@ -19,7 +19,7 @@ if not os.path.exists('title_entities_vocab.json'):
     entities = ['<pad>', '<unk>']
     with open("small_train/entity_embedding.vec", "r") as f:
         lines = f.readlines()
-        for line in lines:
+        for line in tqdm.tqdm(lines):
             line = line.strip().split("\t")
             entities.append(line[0])
     entities = dict(zip(entities, range(len(entities))))
@@ -30,7 +30,7 @@ if not os.path.exists('title_entities_embedding.pkl'):
     with open("small_train/entity_embedding.vec", "r") as f:
         vec = []
         lines = f.readlines()
-        for line in lines:
+        for line in tqdm.tqdm(lines):
             line = line.strip().split("\t")
             vec.append(np.array([float(item) for item in line[1:]]))
         vec.insert(0, np.zeros(shape=(len(vec[-1]))))
@@ -44,7 +44,7 @@ if not os.path.exists('title_words_vocab.json'):
     word_freq = Counter()
     for title in tqdm.tqdm(news.Title):
         title = title.lower()
-        tokens = [normalize_string(s) for s in nltk.word_tokenize(title)]
+        tokens = split_words(title)
         word_freq.update(tokens)
     cumsum = np.cumsum(sorted(list(word_freq.values()), reverse=True))
     total = cumsum[-1] * 0.97
