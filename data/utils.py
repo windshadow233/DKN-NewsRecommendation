@@ -18,7 +18,15 @@ def normalize_string(s):
 
 
 def split_words(words):
-    return [normalize_string(s) for s in nltk.word_tokenize(words) if s not in string.punctuation]
+    split = []
+    for word in nltk.word_tokenize(words):
+        if word in string.punctuation:
+            continue
+        norm = normalize_string(word)
+        if norm == '':
+            continue
+        split.append(norm)
+    return split
 
 
 def get_entities_from_title(title, entities):
