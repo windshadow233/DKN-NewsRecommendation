@@ -15,18 +15,7 @@ news = pd.read_csv('small_train/news.tsv', sep='\t', header=None, index_col=0)
 news.index.name = 'News_ID'
 news.columns = ['Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title_Entities', 'Abstract_Entities']
 
-if not os.path.exists('title_entities_vocab.json'):
-    entities = ['<pad>', '<unk>']
-    with open("small_train/entity_embedding.vec", "r") as f:
-        lines = f.readlines()
-        for line in tqdm.tqdm(lines):
-            line = line.strip().split("\t")
-            entities.append(line[0])
-    entities = dict(zip(entities, range(len(entities))))
-    with open('title_entities_vocab.json', 'w') as f:
-        f.write(json.dumps(entities))
-
-if not os.path.exists('title_entities_embedding.pkl'):
+if not os.path.exists('entities_embedding.pkl'):
     with open("small_train/entity_embedding.vec", "r") as f:
         vec = []
         lines = f.readlines()
@@ -37,8 +26,19 @@ if not os.path.exists('title_entities_embedding.pkl'):
         vec.insert(0, np.zeros(shape=(len(vec[-1]))))
         vec = np.stack(vec)
 
-    with open('title_entities_embedding.pkl', 'wb') as f:
+    with open('entities_embedding.pkl', 'wb') as f:
         f.write(pickle.dumps(vec))
+
+if not os.path.exists('entities_vocab.json'):
+    entities = ['<pad>', '<unk>']
+    with open("small_train/entity_embedding.vec", "r") as f:
+        lines = f.readlines()
+        for line in tqdm.tqdm(lines):
+            line = line.strip().split("\t")
+            entities.append(line[0])
+    entities = dict(zip(entities, range(len(entities))))
+    with open('entities_vocab.json', 'w') as f:
+        f.write(json.dumps(entities))
 
 if not os.path.exists('title_words_vocab.json'):
     word_freq = Counter()

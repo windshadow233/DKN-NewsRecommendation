@@ -4,8 +4,12 @@
     <list default="true" id="c2e04759-05f1-4b26-bc5b-6b84ea74f81f" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/config.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/preprocess.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/preprocess.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/title_entities_embedding.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/data/entities_embedding.pkl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/title_entities_vocab.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/entities_vocab.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data/title_words_vocab.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/data/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,7 +37,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="F:/pycharmProjects/cartoonGAN" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../lab4" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
@@ -41,7 +45,7 @@
       <recent name="F:\深度学习实验\lab5\data" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.preprocess">
+  <component name="RunManager" selected="Python.main">
     <configuration name="config" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="lab5" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -132,8 +136,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.preprocess" />
         <item itemvalue="Python.main" />
+        <item itemvalue="Python.preprocess" />
         <item itemvalue="Python.config" />
         <item itemvalue="Python.dataset" />
       </list>
@@ -153,7 +157,8 @@
       <workItem from="1607706851545" duration="6927000" />
       <workItem from="1607750326100" duration="34815000" />
       <workItem from="1607837751764" duration="592000" />
-      <workItem from="1607863014349" duration="13026000" />
+      <workItem from="1607863014349" duration="13570000" />
+      <workItem from="1607921752348" duration="3255000" />
     </task>
     <servers />
   </component>
@@ -165,14 +170,14 @@
       <screen x="0" y="0" width="1536" height="864" />
     </state>
     <state x="223" y="87" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.864@0.0.1536.864" timestamp="1607769198892" />
-    <state x="499" y="179" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1607887131238">
+    <state x="499" y="179" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1607925721692">
       <screen x="0" y="0" width="1536" height="864" />
     </state>
-    <state x="499" y="179" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1536.864@0.0.1536.864" timestamp="1607887131238" />
-    <state x="549" y="187" key="FileChooserDialogImpl" timestamp="1607887230809">
+    <state x="499" y="179" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1536.864@0.0.1536.864" timestamp="1607925721692" />
+    <state x="549" y="187" key="FileChooserDialogImpl" timestamp="1607887306867">
       <screen x="0" y="0" width="1536" height="864" />
     </state>
-    <state x="549" y="187" key="FileChooserDialogImpl/0.0.1536.864@0.0.1536.864" timestamp="1607887230809" />
+    <state x="549" y="187" key="FileChooserDialogImpl/0.0.1536.864@0.0.1536.864" timestamp="1607887306867" />
     <state width="1493" height="391" key="GridCell.Tab.0.bottom" timestamp="1607795571252">
       <screen x="0" y="0" width="1536" height="864" />
     </state>
