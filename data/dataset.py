@@ -142,8 +142,8 @@ class UserDataset(Dataset):
                 click_history.extend(behavior.History.split(' '))
             impressions.extend(behavior.Impressions.split(' '))
         ####################### candidate news #######################
-        positive = list(filter(lambda x: x[-1] == '1', impressions))
         # 以positive_rate概率抽取正例
+        positive = list(filter(lambda x: x[-1] == '1', impressions))
         if random.random() < self.positive_rate and positive:
             candidate_id, is_click = random.choice(positive).split('-')
         else:
