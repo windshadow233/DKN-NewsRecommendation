@@ -8,6 +8,7 @@ class DKN(nn.Module):
         self.attention = Attention(config)
         self.click_prob = nn.Sequential(
             nn.Linear(len(config.window_sizes) * 2 * config.num_filters, 16),
+            nn.ReLU(inplace=True),
             nn.Linear(16, 1)
         )
 

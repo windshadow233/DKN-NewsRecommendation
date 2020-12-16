@@ -72,6 +72,7 @@ class Attention(nn.Module):
         super(Attention, self).__init__()
         self.weight = nn.Sequential(
             nn.Linear(2 * len(config.window_sizes) * config.num_filters, 16),
+            nn.ReLU(inplace=True),
             nn.Linear(16, 1)
         )
 
