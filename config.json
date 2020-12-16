@@ -2,7 +2,7 @@
   "device": "cuda:0",
   "num_words_per_news": 20,
   "num_clicked_news_per_user": 10,
-  "vocab_size": 20376,
+  "vocab_size": 20370,
   "pad_idx": 0,
   "unk_idx": 1,
   "embedding_dim": 384,
