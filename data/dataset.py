@@ -96,7 +96,8 @@ class UserDataset(Dataset):
                  title_converter: WordsTokenConverter,
                  entity_converter: WordsTokenConverter,
                  behaviors='data/train/behaviors.tsv',
-                 news='data/train/news.tsv'):
+                 news='data/train/news.tsv',
+                 positive_rate=0.3):
         self.title_converter = title_converter
         self.entity_converter = entity_converter
         print('Loading data...')
@@ -110,6 +111,7 @@ class UserDataset(Dataset):
         self.news.index.name = 'News_ID'
         self.news.columns = ['Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title_Entities',
                              'Abstract_Entities']
+        self.positive_rate = positive_rate
         print('Finish!')
 
     def __getitem__(self, item):
@@ -131,7 +133,7 @@ class UserDataset(Dataset):
             }
         """
         user_id = self.users_id[item]
-        behaviors = self.behaviors.get_group(user_id)[::-1]  # [::-1]:优先关注时间较晚的数据
+        behaviors = self.behaviors.get_group(user_id)
         click_history = []
         impressions = []
         for i, behavior in behaviors.iterrows():
@@ -139,8 +141,15 @@ class UserDataset(Dataset):
             if not pd.isna(history):
                 click_history.extend(behavior.History.split(' '))
             impressions.extend(behavior.Impressions.split(' '))
-        # candidate news
-        candidate_id, is_click = random.choice(impressions).split('-')
+        ####################### candidate news #######################
+        positive = list(filter(lambda x: x[-1] == '1', impressions))
+        # 以positive_rate概率抽取正例
+        if random.random() < self.positive_rate and positive:
+            candidate_id, is_click = random.choice(positive).split('-')
+        else:
+            candidate_id, is_click = random.choice(impressions).split('-')
+        # 直接随机抽取
+        # candidate_id, is_click = random.choice(impressions).split('-')
         is_click = torch.tensor(int(is_click), dtype=torch.float32)
         candidate = self.news.loc[candidate_id]
         split_title = split_words(candidate.Title)
@@ -149,7 +158,7 @@ class UserDataset(Dataset):
         entities = [] if pd.isna(entities) else json.loads(entities)
         entities = get_entities_from_title(split_title, entities)
         candidate_title_entities = self.entity_converter.wors2token(entities)
-        # clicked_news
+        ######################## clicked news ########################
         clicked_news = []
         for history in click_history[:config.num_clicked_news_per_user]:
             to_add = {}
