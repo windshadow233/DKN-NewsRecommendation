@@ -95,8 +95,8 @@ class UserDataset(Dataset):
     def __init__(self,
                  title_converter: WordsTokenConverter,
                  entity_converter: WordsTokenConverter,
-                 behaviors='data/small_train/behaviors.tsv',
-                 news='data/small_train/news.tsv'):
+                 behaviors='data/train/behaviors.tsv',
+                 news='data/train/news.tsv'):
         self.title_converter = title_converter
         self.entity_converter = entity_converter
         self.behaviors = pd.read_csv(behaviors, sep='\t', header=None)
@@ -128,7 +128,7 @@ class UserDataset(Dataset):
         """
 
         user_id = self.users_id[item]
-        behaviors = self.behaviors[self.behaviors.User_ID == user_id]
+        behaviors = self.behaviors[self.behaviors.User_ID == user_id][::-1]  # [::-1]:优先关注时间靠后的数据
         click_history = []
         impressions = []
         for i, behavior in behaviors.iterrows():

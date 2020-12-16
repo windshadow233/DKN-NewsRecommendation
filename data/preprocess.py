@@ -1,22 +1,21 @@
 import pandas as pd
 import pickle
 import json
-import nltk
 from collections import Counter
 import os
 import numpy as np
 import tqdm
 from data.utils import *
 
-behaviors = pd.read_csv('small_train/behaviors.tsv', sep='\t', header=None)
+behaviors = pd.read_csv('train/behaviors.tsv', sep='\t', header=None).set_index(0)
 behaviors.index.name = 'Impression_ID'
 behaviors.columns = ['User_ID', 'Time', 'History', 'Impressions']
-news = pd.read_csv('small_train/news.tsv', sep='\t', header=None, index_col=0)
+news = pd.read_csv('train/news.tsv', sep='\t', header=None, index_col=0)
 news.index.name = 'News_ID'
 news.columns = ['Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title_Entities', 'Abstract_Entities']
 
 if not os.path.exists('entities_embedding.pkl'):
-    with open("small_train/entity_embedding.vec", "r") as f:
+    with open("train/entity_embedding.vec", "r") as f:
         vec = []
         lines = f.readlines()
         for line in tqdm.tqdm(lines):
@@ -31,7 +30,7 @@ if not os.path.exists('entities_embedding.pkl'):
 
 if not os.path.exists('entities_vocab.json'):
     entities = ['<pad>', '<unk>']
-    with open("small_train/entity_embedding.vec", "r") as f:
+    with open("train/entity_embedding.vec", "r") as f:
         lines = f.readlines()
         for line in tqdm.tqdm(lines):
             line = line.strip().split("\t")
