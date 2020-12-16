@@ -7,7 +7,7 @@ from data.utils import *
 
 # os.chdir('..')
 import json
-import nltk
+import time
 from data.utils import *
 from config import config
 device = torch.device(config.device)
@@ -99,14 +99,18 @@ class UserDataset(Dataset):
                  news='data/train/news.tsv'):
         self.title_converter = title_converter
         self.entity_converter = entity_converter
-        self.behaviors = pd.read_csv(behaviors, sep='\t', header=None)
+        print('Loading data...')
+        self.behaviors = pd.read_csv(behaviors, sep='\t', header=None).set_index(0)
         self.behaviors.index.name = 'Impression_ID'
         self.behaviors.columns = ['User_ID', 'Time', 'History', 'Impressions']
+        self.users_id = self.behaviors.User_ID.unique().tolist()
+        # 先按User_ID分组,以加快读取速度
+        self.behaviors = self.behaviors.groupby(by='User_ID')
         self.news = pd.read_csv(news, sep='\t', header=None, index_col=0)
         self.news.index.name = 'News_ID'
         self.news.columns = ['Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title_Entities',
                              'Abstract_Entities']
-        self.users_id = self.behaviors.User_ID.unique().tolist()
+        print('Finish!')
 
     def __getitem__(self, item):
 
@@ -126,9 +130,8 @@ class UserDataset(Dataset):
                 ]
             }
         """
-
         user_id = self.users_id[item]
-        behaviors = self.behaviors[self.behaviors.User_ID == user_id][::-1]  # [::-1]:优先关注时间靠后的数据
+        behaviors = self.behaviors.get_group(user_id)[::-1]  # [::-1]:优先关注时间较晚的数据
         click_history = []
         impressions = []
         for i, behavior in behaviors.iterrows():
