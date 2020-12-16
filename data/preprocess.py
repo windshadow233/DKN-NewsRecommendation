@@ -7,9 +7,6 @@ import numpy as np
 import tqdm
 from data.utils import *
 
-behaviors = pd.read_csv('train/behaviors.tsv', sep='\t', header=None).set_index(0)
-behaviors.index.name = 'Impression_ID'
-behaviors.columns = ['User_ID', 'Time', 'History', 'Impressions']
 news = pd.read_csv('train/news.tsv', sep='\t', header=None, index_col=0)
 news.index.name = 'News_ID'
 news.columns = ['Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title_Entities', 'Abstract_Entities']
