@@ -12,7 +12,7 @@ def unicode_to_ascii(s):
 
 
 def normalize_string(s):
-    if re.fullmatch('\d+(?:\.?\d+)?', s):
+    if re.fullmatch('\d+\.?\d*', s):
         return '<num>'
     s = re.sub('(^[^a-zA-Z])|([^a-zA-Z]$)', '', s)
     s = unicode_to_ascii(s.lower().strip())
