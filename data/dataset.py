@@ -21,12 +21,14 @@ def user_data_collate(one_batch):
                 "candidate_news": {
                     "title": num_words_per_news,
                     "entities": num_words_per_news,
+                    "category": 1
                     "is_click": 1
                 },
                 "clicked_news": [
                     {
                         "title": num_words_per_news,
-                        "entities": num_words_per_news
+                        "entities": num_words_per_news,
+                        "category": 1
                     } * num_clicked_news_per_user
                 ]
             } * batch_size)
@@ -34,41 +36,53 @@ def user_data_collate(one_batch):
         candidate_news:
             {
                 "titles": batch_size * num_words_per_news,
-                "entities": batch_size * num_words_per_news
+                "entities": batch_size * num_words_per_news,
+                "categories": batch_size
             }
         clicked_news:
             [
                 {
                     "titles": batch_size * num_words_per_news,
-                    "entities": batch_size * num_words_per_news
+                    "entities": batch_size * num_words_per_news,
+                    "categories": batch_size
                 } * num_clicked_news_per_user
             ]
         is_click: batch_size
     """
     clicked_news_titles = [[] for _ in range(config.num_clicked_news_per_user)]
     clicked_news_entities = [[] for _ in range(config.num_clicked_news_per_user)]
+    clicked_news_categories = [[] for _ in range(config.num_clicked_news_per_user)]
     candidate_news_titles = []
     candidate_news_entities = []
+    candidate_news_categories = []
     is_click = []
     for data in one_batch:
         candidate = data['candidate_news']
         clicked = data['clicked_news']
         candidate_news_titles.append(candidate['title'])
         candidate_news_entities.append(candidate['entities'])
+        candidate_news_categories.append(candidate['category'])
         is_click.append(candidate['is_click'])
         for i, one_clicked in enumerate(clicked):
             clicked_titles = one_clicked['title']
             clicked_entities = one_clicked['entities']
+            clicked_category = one_clicked['category']
             clicked_news_titles[i].append(clicked_titles)
             clicked_news_entities[i].append(clicked_entities)
+            clicked_news_categories[i].append(clicked_category)
     clicked_news_titles = list(map(lambda x: torch.stack(x), clicked_news_titles))
     clicked_news_entities = list(map(lambda x: torch.stack(x), clicked_news_entities))
+    clicked_news_categories = list(map(lambda x: torch.stack(x), clicked_news_categories))
     candidate_news = {
         'titles': torch.stack(candidate_news_titles).to(device),
-        'entities': torch.stack(candidate_news_entities).to(device)
+        'entities': torch.stack(candidate_news_entities).to(device),
+        'categories': torch.stack(candidate_news_categories).to(device)
     }
-    clicked_news = [{'titles': titles.to(device), 'entities': entities.to(device)}
-                    for titles, entities in zip(clicked_news_titles, clicked_news_entities)]
+    clicked_news = [{'titles': titles.to(device),
+                     'entities': entities.to(device),
+                     'categories': categories.to(device)}
+                    for titles, entities, categories
+                    in zip(clicked_news_titles, clicked_news_entities, clicked_news_categories)]
     is_click = torch.stack(is_click).to(device)
     return candidate_news, clicked_news, is_click
 
@@ -95,11 +109,14 @@ class UserDataset(Dataset):
     def __init__(self,
                  title_converter: WordsTokenConverter,
                  entity_converter: WordsTokenConverter,
+                 category_dict='data/categories.json',
                  behaviors='data/train/behaviors.tsv',
                  news='data/train/news.tsv',
                  positive_rate=0.3):
         self.title_converter = title_converter
         self.entity_converter = entity_converter
+        with open(category_dict, 'r') as f:
+            self.category_dict = json.loads(f.read())
         print('Loading data...')
         self.behaviors = pd.read_csv(behaviors, sep='\t', header=None).set_index(0)
         self.behaviors.index.name = 'Impression_ID'
@@ -122,12 +139,14 @@ class UserDataset(Dataset):
                 "candidate_news": {
                     "title": num_words_per_news,
                     "entities": num_words_per_news,
+                    "category": 1
                     "is_click": 1
                 },
                 "clicked_news": [
                     {
                         "title": num_words_per_news,
-                        "entities": num_words_per_news
+                        "entities": num_words_per_news,
+                        "category": 1
                     } * num_clicked_news_per_user
                 ]
             }
@@ -144,15 +163,17 @@ class UserDataset(Dataset):
         ####################### candidate news #######################
         # 以positive_rate概率抽取正例
         positive = list(filter(lambda x: x[-1] == '1', impressions))
+        negative = list(filter(lambda x: x[-1] == '0', impressions))
         if random.random() < self.positive_rate and positive:
             candidate_id, is_click = random.choice(positive).split('-')
         else:
-            candidate_id, is_click = random.choice(impressions).split('-')
+            candidate_id, is_click = random.choice(negative).split('-')
         # 直接随机抽取
         # candidate_id, is_click = random.choice(impressions).split('-')
         is_click = torch.tensor(int(is_click), dtype=torch.float32)
         candidate = self.news.loc[candidate_id]
         split_title = split_words(candidate.Title)
+        candidate_category = torch.tensor(self.category_dict.get(candidate.Category, 0)).long()
         candidate_title = self.title_converter.wors2token(split_title)
         entities = candidate.Title_Entities
         entities = [] if pd.isna(entities) else json.loads(entities)
@@ -160,7 +181,8 @@ class UserDataset(Dataset):
         candidate_title_entities = self.entity_converter.wors2token(entities)
         ######################## clicked news ########################
         clicked_news = []
-        for history in click_history[:config.num_clicked_news_per_user]:
+        # 优先取时间靠后的历史记录
+        for history in click_history[-config.num_clicked_news_per_user:]:
             to_add = {}
             news = self.news.loc[history]
             split_title = split_words(news.Title)
@@ -169,16 +191,18 @@ class UserDataset(Dataset):
             entities = get_entities_from_title(split_title, entities)
             to_add['title'] = self.title_converter.wors2token(split_title)
             to_add['entities'] = self.entity_converter.wors2token(entities)
+            to_add['category'] = torch.tensor(self.category_dict.get(news.Category, 0)).long()
             clicked_news.append(to_add)
         # 若clicked_news不够num_clicked_news_per_user条,补0(待考虑)
         pad_vec = torch.zeros(config.num_words_per_news, dtype=torch.long)
-        clicked_news.extend([{'title': pad_vec, 'entities': pad_vec}
+        clicked_news.extend([{'title': pad_vec, 'entities': pad_vec, 'category': torch.tensor(0)}
                              for _ in range(config.num_clicked_news_per_user - len(clicked_news))])
         to_return = {
             'candidate_news': {
                 'title': candidate_title,
                 'entities': candidate_title_entities,
-                'is_click': is_click
+                'is_click': is_click,
+                'category': candidate_category
             },
             'clicked_news': clicked_news
         }

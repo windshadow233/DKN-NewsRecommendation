@@ -11,6 +11,12 @@ news = pd.read_csv('train/news.tsv', sep='\t', header=None, index_col=0)
 news.index.name = 'News_ID'
 news.columns = ['Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title_Entities', 'Abstract_Entities']
 
+if not os.path.exists('categories.json'):
+    with open('categories.json', 'w') as f:
+        category = news.Category.unique()
+        f.write(json.dumps(dict(zip(category, range(1, len(category) + 1)))))
+
+
 if not os.path.exists('entities_embedding.pkl'):
     with open("train/entity_embedding.vec", "r") as f:
         vec = []

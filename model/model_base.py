@@ -8,14 +8,14 @@ class Embedding(nn.Module):
     def __init__(self, config, entity_embedding):
         super(Embedding, self).__init__()
         self.use_context = config.use_context
-        self.word_embedding = nn.Embedding(config.vocab_size, config.embedding_dim, padding_idx=config.pad_idx)
+        self.word_embedding = nn.Embedding(config.vocab_size, config.title_words_embedding_dim, padding_idx=config.pad_idx)
         with open(entity_embedding, 'rb') as f:
             entity_embedding = pickle.loads(f.read())
         self.register_buffer('entity_embedding', torch.tensor(entity_embedding).float())
 
         entity_embedding_dim = self.entity_embedding.shape[1]
         self.transform = nn.Sequential(
-            nn.Linear(entity_embedding_dim, config.embedding_dim),
+            nn.Linear(entity_embedding_dim, config.title_words_embedding_dim),
             nn.Tanh()
         )
 
@@ -23,7 +23,7 @@ class Embedding(nn.Module):
         """
         :param titles: (batch_size, num_words_per_news)
         :param entities: (batch_size, num_words_per_news)
-        :return: (batch_size, 2 or 3, num_words_per_news, embedding_dim)
+        :return: (batch_size, 2 or 3, num_words_per_news, title_words_embedding_dim)
         """
         if self.use_context:
             raise RuntimeError('context not given')
@@ -38,9 +38,13 @@ class KCNN(nn.Module):
         self.embedding = Embedding(config, entity_embedding)
         self.conv_filters = nn.ModuleDict({
             str(i): nn.Conv2d(3 if config.use_context else 2, config.num_filters,
-                              (x, config.embedding_dim))
+                              (x, config.title_words_embedding_dim))
             for i, x in enumerate(config.window_sizes)
         })
+        self.category_embedding = nn.Sequential(
+            nn.Embedding(config.category_num, config.categories_embedding_dim, padding_idx=0),
+            nn.Linear(config.categories_embedding_dim, len(config.window_sizes) * config.num_filters)
+        )
 
     def forward(self, news):
 
@@ -49,22 +53,26 @@ class KCNN(nn.Module):
           news:
             {
                 "titles": batch_size * num_words_per_news,
-                "entities":batch_size * num_words_per_news
+                "entities": batch_size * num_words_per_news,
+                "categories": batch_size
             }
 
-        Return: (batch_size, len(window_sizes) * num_filter)
+        Return: (batch_size, len(window_sizes) * num_filters)
         """
 
         titles = news.get('titles')
         entities = news.get('entities')
+        categories = news.get('categories')
         multi_channel_embedding = self.embedding(titles, entities)
+        categories_embedding = self.category_embedding(categories)
         pooled_vecs = []
         for conv in self.conv_filters.values():
             conved_result = conv(multi_channel_embedding).squeeze(-1)
             activated = F.relu(conved_result)
             pooled = activated.max(-1).values
             pooled_vecs.append(pooled)
-        return torch.cat(pooled_vecs, dim=1)
+        out_vec = torch.cat(pooled_vecs, dim=1) + categories_embedding
+        return out_vec
 
 
 class Attention(nn.Module):
@@ -80,10 +88,10 @@ class Attention(nn.Module):
 
         """
         Args:
-          candidate_news_vec: (batch_size, len(window_sizes) * num_filter)
+          candidate_news_vec: (batch_size, len(window_sizes) * num_filters)
           clicked_news_vec: (num_clicked_news_per_user, batch_size, len(window_sizes) * num_filters)
 
-        Return: user_embedding: (batch_size, len(window_sizes) * num_filter)
+        Return: user_embedding: (batch_size, len(window_sizes) * num_filters)
         """
 
         candidate_expanded = candidate_news_vec.expand(clicked_news_vec.shape[0], -1, -1)

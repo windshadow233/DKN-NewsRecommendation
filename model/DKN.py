@@ -7,7 +7,7 @@ class DKN(nn.Module):
         self.kcnn = KCNN(config, entity_embedding=entity_embedding)
         self.attention = Attention(config)
         self.click_prob = nn.Sequential(
-            nn.Linear(len(config.window_sizes) * 2 * config.num_filters, 16),
+            nn.Linear(2 * len(config.window_sizes) * config.num_filters, 16),
             nn.ReLU(inplace=True),
             nn.Linear(16, 1)
         )
@@ -19,13 +19,15 @@ class DKN(nn.Module):
           candidate_news:
             {
                 "titles": batch_size * num_words_per_news,
-                "entities": batch_size * num_words_per_news
+                "entities": batch_size * num_words_per_news,
+                "categories": batch_size
             }
           clicked_news:
             [
                 {
                     "titles": batch_size * num_words_per_news,
-                    "entities": batch_size * num_words_per_news
+                    "entities": batch_size * num_words_per_news,
+                    "categories": batch_size * num_words_per_news
                 } * num_clicked_news_per_user
             ]
          sigmoid_at_end: use sigmoid at last

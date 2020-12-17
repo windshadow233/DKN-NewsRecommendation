@@ -1,12 +1,14 @@
 {
   "device": "cuda:0",
-  "num_words_per_news": 20,
+  "num_words_per_news": 15,
   "num_clicked_news_per_user": 10,
   "vocab_size": 20370,
   "pad_idx": 0,
   "unk_idx": 1,
-  "embedding_dim": 384,
+  "title_words_embedding_dim": 100,
+  "category_num": 19,
+  "categories_embedding_dim": 100,
   "use_context": false,
-  "num_filters": 10,
-  "window_sizes": [2, 3, 4, 5, 6]
+  "num_filters": 100,
+  "window_sizes": [1, 2, 3, 4]
 }
