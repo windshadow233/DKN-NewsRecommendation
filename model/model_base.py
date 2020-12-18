@@ -8,7 +8,8 @@ class Embedding(nn.Module):
     def __init__(self, config, entity_embedding):
         super(Embedding, self).__init__()
         self.use_context = config.use_context
-        self.word_embedding = nn.Embedding(config.vocab_size, config.title_words_embedding_dim, padding_idx=config.pad_idx)
+        self.word_embedding = nn.Embedding(config.vocab_size, config.title_words_embedding_dim,
+                                           padding_idx=config.pad_idx)
         with open(entity_embedding, 'rb') as f:
             entity_embedding = pickle.loads(f.read())
         self.register_buffer('entity_embedding', torch.tensor(entity_embedding).float())
@@ -42,7 +43,8 @@ class KCNN(nn.Module):
             for i, x in enumerate(config.window_sizes)
         })
         self.category_embedding = nn.Sequential(
-            nn.Embedding(config.category_num, config.categories_embedding_dim, padding_idx=0),
+            nn.Embedding(config.category_num, config.categories_embedding_dim, padding_idx=config.pad_idx),
+            nn.ReLU(inplace=True),
             nn.Linear(config.categories_embedding_dim, len(config.window_sizes) * config.num_filters)
         )
 
