@@ -89,7 +89,7 @@ def user_data_collate(one_batch):
     return candidate_news, clicked_news, is_click
 
 
-class WordsTokenConverter:
+class Dictionary:
     def __init__(self, word_dict):
         with open(word_dict, 'r') as f:
             self.char2idx = json.loads(f.read())
@@ -109,11 +109,11 @@ class WordsTokenConverter:
 
 class TrainDataset(Dataset):
     def __init__(self,
-                 title_converter: WordsTokenConverter,
-                 entity_converter: WordsTokenConverter,
+                 title_dict,
+                 entity_dict,
                  positive_rate=0.3):
-        self.title_converter = title_converter
-        self.entity_converter = entity_converter
+        self.title_dict = Dictionary(title_dict)
+        self.entity_dict = Dictionary(entity_dict)
         with open('data/categories.json', 'r') as f:
             self.category_dict = json.loads(f.read())
         print('Loading data...')
@@ -173,11 +173,11 @@ class TrainDataset(Dataset):
         candidate = self.news.loc[candidate_id]
         split_title = split_words(candidate.Title)
         candidate_category = torch.tensor(self.category_dict.get(candidate.Category, 0)).long()
-        candidate_title = self.title_converter.wors2token(split_title)
+        candidate_title = self.title_dict.wors2token(split_title)
         entities = candidate.Title_Entities
         entities = [] if pd.isna(entities) else json.loads(entities)
         entities = get_entities_from_title(split_title, entities)
-        candidate_title_entities = self.entity_converter.wors2token(entities)
+        candidate_title_entities = self.entity_dict.wors2token(entities)
         ######################## clicked news ########################
         clicked_news = []
         # 优先取时间靠后的历史记录
@@ -188,8 +188,8 @@ class TrainDataset(Dataset):
             entities = news.Title_Entities
             entities = [] if pd.isna(entities) else json.loads(entities)
             entities = get_entities_from_title(split_title, entities)
-            to_add['title'] = self.title_converter.wors2token(split_title)
-            to_add['entities'] = self.entity_converter.wors2token(entities)
+            to_add['title'] = self.title_dict.wors2token(split_title)
+            to_add['entities'] = self.entity_dict.wors2token(entities)
             to_add['category'] = torch.tensor(self.category_dict.get(news.Category, 0)).long()
             clicked_news.append(to_add)
         # 若clicked_news不够num_clicked_news_per_user条,补0(待考虑)
@@ -213,11 +213,11 @@ class TrainDataset(Dataset):
 
 class TestDataset(object):
     def __init__(self,
-                 title_converter: WordsTokenConverter,
-                 entity_converter: WordsTokenConverter,
+                 title_dict,
+                 entity_dict,
                  mode='test'):
-        self.title_converter = title_converter
-        self.entity_converter = entity_converter
+        self.title_dict = Dictionary(title_dict)
+        self.entity_dict = Dictionary(entity_dict)
         with open('data/categories.json', 'r') as f:
             self.category_dict = json.loads(f.read())
         print('Loading data...')
@@ -241,12 +241,11 @@ class TestDataset(object):
         user_id = behavior.User_ID
         behaviors = self.users.get_group(user_id)
         click_history = []
-        impressions = []
         for i, line in behaviors.iterrows():
             history = line.History
             if not pd.isna(history):
                 click_history.extend(history.split(' '))
-        impressions.extend(behavior.Impressions.split(' '))
+        impressions = behavior.Impressions.split(' ')
         clicked_news = []
         for history in click_history[-config.num_clicked_news_per_user:]:
             to_add = {}
@@ -255,8 +254,8 @@ class TestDataset(object):
             entities = news.Title_Entities
             entities = [] if pd.isna(entities) else json.loads(entities)
             entities = get_entities_from_title(split_title, entities)
-            to_add['title'] = self.title_converter.wors2token(split_title)
-            to_add['entities'] = self.entity_converter.wors2token(entities)
+            to_add['title'] = self.title_dict.wors2token(split_title)
+            to_add['entities'] = self.entity_dict.wors2token(entities)
             to_add['category'] = torch.tensor(self.category_dict.get(news.Category, 0)).long()
             clicked_news.append(to_add)
         for impression in impressions:
@@ -269,11 +268,11 @@ class TestDataset(object):
             candidate = self.news.loc[candidate_id]
             split_title = split_words(candidate.Title)
             candidate_category = torch.tensor(self.category_dict.get(candidate.Category, 0)).long()
-            candidate_title = self.title_converter.wors2token(split_title)
+            candidate_title = self.title_dict.wors2token(split_title)
             entities = candidate.Title_Entities
             entities = [] if pd.isna(entities) else json.loads(entities)
             entities = get_entities_from_title(split_title, entities)
-            candidate_title_entities = self.entity_converter.wors2token(entities)
+            candidate_title_entities = self.entity_dict.wors2token(entities)
             to_return = {
                 'candidate_news': {
                     'title': candidate_title,

@@ -42,11 +42,12 @@ class KCNN(nn.Module):
                               (x, config.title_words_embedding_dim))
             for i, x in enumerate(config.window_sizes)
         })
-        self.category_embedding = nn.Sequential(
-            nn.Embedding(config.category_num, config.categories_embedding_dim, padding_idx=config.pad_idx),
-            nn.ReLU(inplace=True),
-            nn.Linear(config.categories_embedding_dim, len(config.window_sizes) * config.num_filters)
-        )
+        if config.use_category:
+            self.category_dense = nn.Sequential(
+                nn.Linear(config.category_num, config.category_vec_dim),
+                nn.ReLU(inplace=True)
+            )
+            self.category_num = config.category_num
 
     def forward(self, news):
 
@@ -59,39 +60,47 @@ class KCNN(nn.Module):
                 "categories": batch_size
             }
 
-        Return: (batch_size, len(window_sizes) * num_filters)
+        Return: (batch_size, len(window_sizes) * num_filters (|+category_vec_dim))
         """
 
         titles = news.get('titles')
         entities = news.get('entities')
-        categories = news.get('categories')
         multi_channel_embedding = self.embedding(titles, entities)
-        categories_embedding = self.category_embedding(categories)
         pooled_vecs = []
         for conv in self.conv_filters.values():
             conved_result = conv(multi_channel_embedding).squeeze(-1)
             activated = F.relu(conved_result)
             pooled = activated.max(-1).values
             pooled_vecs.append(pooled)
-        out_vec = torch.cat(pooled_vecs, dim=1) + categories_embedding
+        out_vec = torch.cat(pooled_vecs, dim=1)
+        if hasattr(self, 'category_dense'):
+            categories = news.get('categories')
+            categories_vec = torch.eye(n=self.category_num, device=categories.device)[categories]
+            categories_vec = self.category_dense(categories_vec)
+            out_vec = torch.cat([out_vec, categories_vec], dim=1)
         return out_vec
 
 
 class Attention(nn.Module):
     def __init__(self, config):
         super(Attention, self).__init__()
+        in_features = 2 * len(config.window_sizes) * config.num_filters
+        if config.use_category:
+            in_features += 2 * config.category_vec_dim
         self.weight = nn.Sequential(
-            nn.Linear(2 * len(config.window_sizes) * config.num_filters, 16),
+            nn.Linear(in_features, 256),
             nn.ReLU(inplace=True),
-            nn.Linear(16, 1)
+            nn.Linear(256, 128),
+            nn.ReLU(inplace=True),
+            nn.Linear(128, 1)
         )
 
     def forward(self, candidate_news_vec, clicked_news_vec):
 
         """
         Args:
-          candidate_news_vec: (batch_size, len(window_sizes) * num_filters)
-          clicked_news_vec: (num_clicked_news_per_user, batch_size, len(window_sizes) * num_filters)
+          candidate_news_vec: (batch_size, len(window_sizes) * num_filters (|+category_vec_dim))
+          clicked_news_vec: (num_clicked_news_per_user, batch_size, len(window_sizes) * num_filters (|+category_vec_dim))
 
         Return: user_embedding: (batch_size, len(window_sizes) * num_filters)
         """

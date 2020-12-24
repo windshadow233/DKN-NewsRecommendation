@@ -5,11 +5,9 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data/dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/dataset.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/entities_embedding.pkl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/entities_vocab.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/preprocess.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/preprocess.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/title_words_vocab.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/DKN.py" beforeDir="false" afterPath="$PROJECT_DIR$/model/DKN.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/model_base.py" beforeDir="false" afterPath="$PROJECT_DIR$/model/model_base.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,7 +43,7 @@
       <recent name="F:\深度学习实验\lab5\data" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.preprocess">
+  <component name="RunManager" selected="Python.main">
     <configuration name="config" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="lab5" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -113,6 +111,9 @@
       <module name="lab5" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/data" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -136,8 +137,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.preprocess" />
         <item itemvalue="Python.main" />
+        <item itemvalue="Python.preprocess" />
         <item itemvalue="Python.config" />
         <item itemvalue="Python.dataset" />
       </list>
@@ -163,7 +164,20 @@
       <workItem from="1608011568511" duration="1198000" />
       <workItem from="1608028140430" duration="1057000" />
       <workItem from="1608029363793" duration="12000" />
-      <workItem from="1608093830436" duration="1215000" />
+      <workItem from="1608093830436" duration="5134000" />
+      <workItem from="1608100607815" duration="4529000" />
+      <workItem from="1608108690891" duration="443000" />
+      <workItem from="1608109451180" duration="24359000" />
+      <workItem from="1608181514050" duration="11013000" />
+      <workItem from="1608200592067" duration="5598000" />
+      <workItem from="1608216630288" duration="4728000" />
+      <workItem from="1608224178801" duration="4144000" />
+      <workItem from="1608267188889" duration="5991000" />
+      <workItem from="1608277091457" duration="1138000" />
+      <workItem from="1608362013743" duration="8000" />
+      <workItem from="1608563255280" duration="3882000" />
+      <workItem from="1608709668179" duration="109000" />
+      <workItem from="1608786756630" duration="1223000" />
     </task>
     <servers />
   </component>
@@ -171,60 +185,61 @@
     <option name="version" value="1" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="223" y="87" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1607769198892">
+    <state x="223" y="87" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1608274046630">
       <screen x="0" y="0" width="1536" height="864" />
     </state>
-    <state x="223" y="87" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.864@0.0.1536.864" timestamp="1607769198892" />
-    <state x="499" y="179" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1608094365707">
+    <state x="223" y="87" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.864@0.0.1536.864" timestamp="1608274046630" />
+    <state x="499" y="179" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1608184631253">
       <screen x="0" y="0" width="1536" height="864" />
     </state>
-    <state x="499" y="179" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1536.864@0.0.1536.864" timestamp="1608094365707" />
-    <state x="549" y="187" key="FileChooserDialogImpl" timestamp="1608014214649">
+    <state x="499" y="179" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1536.864@0.0.1536.864" timestamp="1608184631253" />
+    <state x="549" y="187" key="FileChooserDialogImpl" timestamp="1608709715569">
       <screen x="0" y="0" width="1536" height="864" />
     </state>
-    <state x="549" y="187" key="FileChooserDialogImpl/0.0.1536.864@0.0.1536.864" timestamp="1608014214649" />
-    <state width="1493" height="391" key="GridCell.Tab.0.bottom" timestamp="1607795571252">
+    <state x="549" y="187" key="FileChooserDialogImpl/0.0.1536.864@0.0.1536.864" timestamp="1608709715569" />
+    <state width="1493" height="439" key="GridCell.Tab.0.bottom" timestamp="1608273893296">
       <screen x="0" y="0" width="1536" height="864" />
     </state>
-    <state width="1493" height="391" key="GridCell.Tab.0.bottom/0.0.1536.864@0.0.1536.864" timestamp="1607795571252" />
-    <state width="1493" height="391" key="GridCell.Tab.0.center" timestamp="1607795571250">
+    <state width="1493" height="439" key="GridCell.Tab.0.bottom/0.0.1536.864@0.0.1536.864" timestamp="1608273893296" />
+    <state width="1493" height="439" key="GridCell.Tab.0.center" timestamp="1608273893296">
       <screen x="0" y="0" width="1536" height="864" />
     </state>
-    <state width="1493" height="391" key="GridCell.Tab.0.center/0.0.1536.864@0.0.1536.864" timestamp="1607795571250" />
-    <state width="1493" height="391" key="GridCell.Tab.0.left" timestamp="1607795571249">
+    <state width="1493" height="439" key="GridCell.Tab.0.center/0.0.1536.864@0.0.1536.864" timestamp="1608273893296" />
+    <state width="1493" height="439" key="GridCell.Tab.0.left" timestamp="1608273893296">
       <screen x="0" y="0" width="1536" height="864" />
     </state>
-    <state width="1493" height="391" key="GridCell.Tab.0.left/0.0.1536.864@0.0.1536.864" timestamp="1607795571249" />
-    <state width="1493" height="391" key="GridCell.Tab.0.right" timestamp="1607795571251">
+    <state width="1493" height="439" key="GridCell.Tab.0.left/0.0.1536.864@0.0.1536.864" timestamp="1608273893296" />
+    <state width="1493" height="439" key="GridCell.Tab.0.right" timestamp="1608273893296">
       <screen x="0" y="0" width="1536" height="864" />
     </state>
-    <state width="1493" height="391" key="GridCell.Tab.0.right/0.0.1536.864@0.0.1536.864" timestamp="1607795571251" />
-    <state width="1493" height="388" key="GridCell.Tab.1.bottom" timestamp="1607780643075">
+    <state width="1493" height="439" key="GridCell.Tab.0.right/0.0.1536.864@0.0.1536.864" timestamp="1608273893296" />
+    <state width="1493" height="388" key="GridCell.Tab.1.bottom" timestamp="1608147160796">
       <screen x="0" y="0" width="1536" height="864" />
     </state>
-    <state width="1493" height="388" key="GridCell.Tab.1.bottom/0.0.1536.864@0.0.1536.864" timestamp="1607780643075" />
-    <state width="1493" height="388" key="GridCell.Tab.1.center" timestamp="1607780643075">
+    <state width="1493" height="388" key="GridCell.Tab.1.bottom/0.0.1536.864@0.0.1536.864" timestamp="1608147160796" />
+    <state width="1493" height="388" key="GridCell.Tab.1.center" timestamp="1608147160796">
       <screen x="0" y="0" width="1536" height="864" />
     </state>
-    <state width="1493" height="388" key="GridCell.Tab.1.center/0.0.1536.864@0.0.1536.864" timestamp="1607780643075" />
-    <state width="1493" height="388" key="GridCell.Tab.1.left" timestamp="1607780643075">
+    <state width="1493" height="388" key="GridCell.Tab.1.center/0.0.1536.864@0.0.1536.864" timestamp="1608147160796" />
+    <state width="1493" height="388" key="GridCell.Tab.1.left" timestamp="1608147160796">
       <screen x="0" y="0" width="1536" height="864" />
     </state>
-    <state width="1493" height="388" key="GridCell.Tab.1.left/0.0.1536.864@0.0.1536.864" timestamp="1607780643075" />
-    <state width="1493" height="388" key="GridCell.Tab.1.right" timestamp="1607780643075">
+    <state width="1493" height="388" key="GridCell.Tab.1.left/0.0.1536.864@0.0.1536.864" timestamp="1608147160796" />
+    <state width="1493" height="388" key="GridCell.Tab.1.right" timestamp="1608147160796">
       <screen x="0" y="0" width="1536" height="864" />
     </state>
-    <state width="1493" height="388" key="GridCell.Tab.1.right/0.0.1536.864@0.0.1536.864" timestamp="1607780643075" />
+    <state width="1493" height="388" key="GridCell.Tab.1.right/0.0.1536.864@0.0.1536.864" timestamp="1608147160796" />
     <state x="270" y="74" key="SettingsEditor" timestamp="1607496335620">
       <screen x="0" y="0" width="1536" height="864" />
     </state>
     <state x="270" y="74" key="SettingsEditor/0.0.1536.864@0.0.1536.864" timestamp="1607496335620" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/lab5$preprocess.coverage" NAME="preprocess Coverage Results" MODIFIED="1607496419754" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/data" />
     <SUITE FILE_PATH="coverage/lab5$dataset.coverage" NAME="dataset Coverage Results" MODIFIED="1607715442413" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/data" />
-    <SUITE FILE_PATH="coverage/lab5$main.coverage" NAME="main Coverage Results" MODIFIED="1607780370902" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/lab5$config.coverage" NAME="config Coverage Results" MODIFIED="1607752102724" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/lab5$1.coverage" NAME="1 Coverage Results" MODIFIED="1607758424226" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/lab5$1.coverage" NAME="1 Coverage Results" MODIFIED="1608222179785" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/lab5$preprocess.coverage" NAME="preprocess Coverage Results" MODIFIED="1607496419754" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/data" />
+    <SUITE FILE_PATH="coverage/lab5$main.coverage" NAME="main Coverage Results" MODIFIED="1607780370902" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/lab5$evaluate.coverage" NAME="evaluate Coverage Results" MODIFIED="1608273871545" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

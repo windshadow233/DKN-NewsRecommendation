@@ -7,8 +7,9 @@
   "unk_idx": 1,
   "title_words_embedding_dim": 100,
   "category_num": 19,
-  "categories_embedding_dim": 100,
+  "category_vec_dim": 100,
   "use_context": false,
+  "use_category": true,
   "num_filters": 100,
   "window_sizes": [1, 2, 3, 4]
 }
