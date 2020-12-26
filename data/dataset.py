@@ -11,6 +11,8 @@ import time
 import tqdm
 from data.utils import *
 from config import config
+from transformers import AutoTokenizer
+
 
 device = torch.device(config.device)
 
@@ -72,12 +74,12 @@ def user_data_collate(one_batch):
             clicked_news_titles[i].append(clicked_titles)
             clicked_news_entities[i].append(clicked_entities)
             clicked_news_categories[i].append(clicked_category)
-    clicked_news_titles = list(map(lambda x: torch.stack(x), clicked_news_titles))
-    clicked_news_entities = list(map(lambda x: torch.stack(x), clicked_news_entities))
+    clicked_news_titles = list(map(lambda x: torch.nn.utils.rnn.pad_sequence(x, batch_first=True), clicked_news_titles))
+    clicked_news_entities = list(map(lambda x: torch.nn.utils.rnn.pad_sequence(x, batch_first=True), clicked_news_entities))
     clicked_news_categories = list(map(lambda x: torch.stack(x), clicked_news_categories))
     candidate_news = {
-        'titles': torch.stack(candidate_news_titles).to(device),
-        'entities': torch.stack(candidate_news_entities).to(device),
+        'titles': torch.nn.utils.rnn.pad_sequence(candidate_news_titles, batch_first=True).to(device),
+        'entities': torch.nn.utils.rnn.pad_sequence(candidate_news_entities, batch_first=True).to(device),
         'categories': torch.stack(candidate_news_categories).to(device)
     }
     clicked_news = [{'titles': titles.to(device),
@@ -161,18 +163,17 @@ class TrainDataset(Dataset):
             impressions.extend(behavior.Impressions.split(' '))
         ####################### candidate news #######################
         # 以positive_rate概率抽取正例
-        positive = list(filter(lambda x: x[-1] == '1', impressions))
-        negative = list(filter(lambda x: x[-1] == '0', impressions))
-        if random.random() < self.positive_rate and positive:
-            candidate_id, is_click = random.choice(positive).split('-')
-        else:
-            candidate_id, is_click = random.choice(negative).split('-')
+        # positive = list(filter(lambda x: x[-1] == '1', impressions))
+        # if random.random() < self.positive_rate and positive:
+        #     candidate_id, is_click = random.choice(positive).split('-')
+        # else:
+        #     candidate_id, is_click = random.choice(impressions).split('-')
         # 直接随机抽取
-        # candidate_id, is_click = random.choice(impressions).split('-')
+        candidate_id, is_click = random.choice(impressions).split('-')
         is_click = torch.tensor(int(is_click), dtype=torch.float32)
         candidate = self.news.loc[candidate_id]
         split_title = split_words(candidate.Title)
-        candidate_category = torch.tensor(self.category_dict.get(candidate.Category, 0)).long()
+        candidate_category = torch.tensor(self.category_dict.get(candidate.Category, 0))
         candidate_title = self.title_dict.wors2token(split_title)
         entities = candidate.Title_Entities
         entities = [] if pd.isna(entities) else json.loads(entities)
