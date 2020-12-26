@@ -2,6 +2,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 import pickle
+from transformers import AutoTokenizer, AutoModel
 
 
 class Embedding(nn.Module):
@@ -10,6 +11,7 @@ class Embedding(nn.Module):
         self.use_context = config.use_context
         self.word_embedding = nn.Embedding(config.vocab_size, config.title_words_embedding_dim,
                                            padding_idx=config.pad_idx)
+        # self.word_embedding = AutoModel.from_pretrained('./bert-base-uncased').embeddings.word_embeddings.eval()
         with open(entity_embedding, 'rb') as f:
             entity_embedding = pickle.loads(f.read())
         self.register_buffer('entity_embedding', torch.tensor(entity_embedding).float())
