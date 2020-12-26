@@ -9,7 +9,7 @@
   "category_num": 19,
   "category_vec_dim": 100,
   "use_context": false,
-  "use_category": true,
+  "use_category": false,
   "num_filters": 100,
   "window_sizes": [1, 2, 3, 4]
 }
