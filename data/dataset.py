@@ -122,6 +122,8 @@ class TrainDataset(Dataset):
         self.behaviors = pd.read_csv('data/train/behaviors.tsv', sep='\t', header=None).set_index(0)
         self.behaviors.index.name = 'Impression_ID'
         self.behaviors.columns = ['User_ID', 'Time', 'History', 'Impressions']
+        # 丢弃无价值数据
+        self.behaviors.dropna(subset=['History'], inplace=True)
         self.users_id = self.behaviors.User_ID.unique().tolist()
         # 先按User_ID分组,以加快读取速度
         self.behaviors = self.behaviors.groupby(by='User_ID')
@@ -158,7 +160,7 @@ class TrainDataset(Dataset):
         impressions = []
         for i, behavior in behaviors.iterrows():
             history = behavior.History
-            if not pd.isna(history) and not click_history:
+            if not click_history and not pd.isna(history):
                 click_history.extend(history.split(' '))
             impressions.extend(behavior.Impressions.split(' '))
         ####################### candidate news #######################
