@@ -158,8 +158,8 @@ class TrainDataset(Dataset):
         behaviors = self.behaviors.get_group(user_id)
         impressions = []
         for i, (_, behavior) in enumerate(behaviors.iterrows()):
-            history = behavior.History
             if i == 0:
+                history = behavior.History
                 click_history = history.split(' ')
             impressions.extend(behavior.Impressions.split(' '))
         ####################### candidate news #######################
@@ -222,11 +222,11 @@ class TestDataset(object):
         with open('data/categories.json', 'r') as f:
             self.category_dict = json.loads(f.read())
         print('Loading data...')
-        self.behaviors = pd.read_csv(f'data/{mode}/behaviors.tsv', sep='\t', header=None).set_index(0)
+        # 无history的用户记录另作处理
+        self.behaviors = pd.read_csv(f'data/{mode}/behaviors.tsv', sep='\t', header=None).set_index(0).dropna(subset=[3])
         self.behaviors.index.name = 'Impression_ID'
         self.behaviors.columns = ['User_ID', 'Time', 'History', 'Impressions']
         self.users_id = self.behaviors.User_ID.unique().tolist()
-        self.users = self.behaviors.groupby(by='User_ID')
         self.news = pd.read_csv(f'data/{mode}/news.tsv', sep='\t', header=None, index_col=0)
         self.news.index.name = 'News_ID'
         self.news.columns = ['Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title_Entities',
@@ -239,13 +239,8 @@ class TestDataset(object):
 
     def __getitem__(self, item):
         behavior = self.behaviors.iloc[item]
-        user_id = behavior.User_ID
-        behaviors = self.users.get_group(user_id)
-        click_history = []
-        for i, line in behaviors.iterrows():
-            history = line.History
-            if not pd.isna(history):
-                click_history.extend(history.split(' '))
+        history = behavior.History
+        click_history = history.split(' ')
         impressions = behavior.Impressions.split(' ')
         clicked_news = []
         for history in click_history[-config.num_clicked_news_per_user:]:
