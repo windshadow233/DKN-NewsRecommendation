@@ -113,7 +113,12 @@ class TrainDataset(Dataset):
     def __init__(self,
                  title_dict,
                  entity_dict,
-                 positive_rate=0.3):
+                 positive_rate=0.5):
+        """
+        :param title_dict: 标题字典文件
+        :param entity_dict: 实体字典文件
+        :param positive_rate: 重采样正例概率
+        """
         self.title_dict = Dictionary(title_dict)
         self.entity_dict = Dictionary(entity_dict)
         with open('data/categories.json', 'r') as f:
@@ -165,10 +170,11 @@ class TrainDataset(Dataset):
         ####################### candidate news #######################
         # 以positive_rate概率抽取正例
         positive = list(filter(lambda x: x[-1] == '1', impressions))
+        negative = list(filter(lambda x: x[-1] == '1', impressions))
         if random.random() < self.positive_rate and positive:
             candidate_id, is_click = random.choice(positive).split('-')
         else:
-            candidate_id, is_click = random.choice(impressions).split('-')
+            candidate_id, is_click = random.choice(negative).split('-')
         # 直接随机抽取
         # candidate_id, is_click = random.choice(impressions).split('-')
         is_click = torch.tensor(int(is_click), dtype=torch.float32)
