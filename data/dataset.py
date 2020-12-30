@@ -163,13 +163,13 @@ class TrainDataset(Dataset):
             impressions.extend(behavior.Impressions.split(' '))
         ####################### candidate news #######################
         # 以positive_rate概率抽取正例
-        # positive = list(filter(lambda x: x[-1] == '1', impressions))
-        # if random.random() < self.positive_rate and positive:
-        #     candidate_id, is_click = random.choice(positive).split('-')
-        # else:
-        #     candidate_id, is_click = random.choice(impressions).split('-')
+        positive = list(filter(lambda x: x[-1] == '1', impressions))
+        if random.random() < self.positive_rate and positive:
+            candidate_id, is_click = random.choice(positive).split('-')
+        else:
+            candidate_id, is_click = random.choice(impressions).split('-')
         # 直接随机抽取
-        candidate_id, is_click = random.choice(impressions).split('-')
+        # candidate_id, is_click = random.choice(impressions).split('-')
         is_click = torch.tensor(int(is_click), dtype=torch.float32)
         candidate = self.news.loc[candidate_id]
         split_title = split_words(candidate.Title)
