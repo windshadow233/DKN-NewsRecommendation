@@ -170,7 +170,7 @@ class TrainDataset(Dataset):
         ####################### candidate news #######################
         # 以positive_rate概率抽取正例
         positive = list(filter(lambda x: x[-1] == '1', impressions))
-        negative = list(filter(lambda x: x[-1] == '1', impressions))
+        negative = list(filter(lambda x: x[-1] == '0', impressions))
         if random.random() < self.positive_rate and positive:
             candidate_id, is_click = random.choice(positive).split('-')
         else:
