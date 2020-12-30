@@ -1,6 +1,7 @@
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 import tqdm
+import sys
 import random
 from data.dataset import TrainDataset, user_data_collate
 from model.DKN import *
@@ -17,10 +18,12 @@ train_loader = DataLoader(train_set, batch_size=64, shuffle=False, collate_fn=us
 epochs = 5
 total_step = len(train_loader)
 for epoch in range(epochs):
-    for i, (candidate_news, clicked_news, is_click) in tqdm.tqdm(enumerate(train_loader), total=total_step):
+    for candidate_news, clicked_news, is_click in tqdm.tqdm(train_loader,
+                                                            total=total_step,
+                                                            desc='Epoch_%s' % epoch):
         optimizer.zero_grad()
         pred = model(candidate_news, clicked_news, sigmoid_at_end=False)
         loss = loss_fcn(pred, is_click)
         loss.backward()
         optimizer.step()
-        print(loss.item())
+        print('\r', loss.item(), flush=True, file=sys.stdout)
