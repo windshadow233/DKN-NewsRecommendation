@@ -158,7 +158,7 @@ class TrainDataset(Dataset):
         impressions = []
         for i, behavior in behaviors.iterrows():
             history = behavior.History
-            if not pd.isna(history):
+            if not pd.isna(history) and not click_history:
                 click_history.extend(history.split(' '))
             impressions.extend(behavior.Impressions.split(' '))
         ####################### candidate news #######################
@@ -181,7 +181,6 @@ class TrainDataset(Dataset):
         candidate_title_entities = self.entity_dict.wors2token(entities)
         ######################## clicked news ########################
         clicked_news = []
-        # 优先取时间靠后的历史记录
         for history in click_history[-config.num_clicked_news_per_user:]:
             to_add = {}
             news = self.news.loc[history]
