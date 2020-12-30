@@ -156,12 +156,11 @@ class TrainDataset(Dataset):
         """
         user_id = self.users_id[item]
         behaviors = self.behaviors.get_group(user_id)
-        click_history = []
         impressions = []
-        for i, behavior in behaviors.iterrows():
+        for i, (_, behavior) in enumerate(behaviors.iterrows()):
             history = behavior.History
-            if not click_history and not pd.isna(history):
-                click_history.extend(history.split(' '))
+            if i == 0:
+                click_history = history.split(' ')
             impressions.extend(behavior.Impressions.split(' '))
         ####################### candidate news #######################
         # 以positive_rate概率抽取正例
