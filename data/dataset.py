@@ -74,8 +74,8 @@ def user_data_collate(one_batch):
             clicked_news_titles[i].append(clicked_titles)
             clicked_news_entities[i].append(clicked_entities)
             clicked_news_categories[i].append(clicked_category)
-    clicked_news_titles = list(map(lambda x: torch.nn.utils.rnn.pad_sequence(x, batch_first=True), clicked_news_titles))
-    clicked_news_entities = list(map(lambda x: torch.nn.utils.rnn.pad_sequence(x, batch_first=True), clicked_news_entities))
+    clicked_news_titles = list(map(lambda x: torch.stack(x), clicked_news_titles))
+    clicked_news_entities = list(map(lambda x: torch.stack(x), clicked_news_entities))
     clicked_news_categories = list(map(lambda x: torch.stack(x), clicked_news_categories))
     candidate_news = {
         'titles': torch.nn.utils.rnn.pad_sequence(candidate_news_titles, batch_first=True).to(device),
@@ -232,7 +232,6 @@ class TestDataset(object):
         self.behaviors = pd.read_csv(f'data/{mode}/behaviors.tsv', sep='\t', header=None).set_index(0).dropna(subset=[3])
         self.behaviors.index.name = 'Impression_ID'
         self.behaviors.columns = ['User_ID', 'Time', 'History', 'Impressions']
-        self.users_id = self.behaviors.User_ID.unique().tolist()
         self.news = pd.read_csv(f'data/{mode}/news.tsv', sep='\t', header=None, index_col=0)
         self.news.index.name = 'News_ID'
         self.news.columns = ['Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title_Entities',
@@ -260,6 +259,10 @@ class TestDataset(object):
             to_add['entities'] = self.entity_dict.wors2token(entities)
             to_add['category'] = torch.tensor(self.category_dict.get(news.Category, 0)).long()
             clicked_news.append(to_add)
+        # 若clicked_news不够num_clicked_news_per_user条,补0(待考虑)
+        pad_vec = torch.zeros(config.num_words_per_news, dtype=torch.long)
+        clicked_news.extend([{'title': pad_vec, 'entities': pad_vec, 'category': torch.tensor(0)}
+                             for _ in range(config.num_clicked_news_per_user - len(clicked_news))])
         for impression in impressions:
             if self.mode == 'test':
                 candidate_id = impression
