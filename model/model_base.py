@@ -55,7 +55,7 @@ class KCNN(nn.Module):
                 nn.ReLU(inplace=True)
             )
             self.subcat_num = config.subcategory_num
-            
+
     def forward(self, news):
 
         """
