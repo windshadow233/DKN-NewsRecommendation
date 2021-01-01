@@ -8,7 +8,7 @@ class DKN(nn.Module):
         self.attention = Attention(config)
         in_features = 2 * len(config.window_sizes) * config.num_filters
         if config.use_category:
-            in_features += 2 * config.category_vec_dim
+            in_features += 2 * config.category_vec_dim + 2 * config.subcategory_vec_dim
         self.click_prob = nn.Sequential(
             nn.Linear(in_features, 256),
             nn.ReLU(inplace=True),
@@ -25,14 +25,16 @@ class DKN(nn.Module):
             {
                 "titles": batch_size * num_words_per_news,
                 "entities": batch_size * num_words_per_news,
-                "categories": batch_size
+                "categories": batch_size,
+                "subcategories": batch_size
             }
           clicked_news:
             [
                 {
                     "titles": batch_size * num_words_per_news,
                     "entities": batch_size * num_words_per_news,
-                    "categories": batch_size * num_words_per_news
+                    "categories": batch_size * num_words_per_news,
+                    "subcategories": batch_size
                 } * num_clicked_news_per_user
             ]
          sigmoid_at_end: use sigmoid at last

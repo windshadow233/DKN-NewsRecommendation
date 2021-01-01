@@ -11,6 +11,12 @@ news = pd.read_csv('train/news.tsv', sep='\t', header=None, index_col=0)
 news.index.name = 'News_ID'
 news.columns = ['Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title_Entities', 'Abstract_Entities']
 
+if not os.path.exists('subcategories.json'):
+    with open('subcategories.json', 'w') as f:
+        subcategory = news.SubCategory.unique()
+        f.write(json.dumps(dict(zip(subcategory, range(1, len(subcategory) + 1)))))
+
+
 if not os.path.exists('categories.json'):
     with open('categories.json', 'w') as f:
         category = news.Category.unique()

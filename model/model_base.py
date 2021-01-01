@@ -50,7 +50,12 @@ class KCNN(nn.Module):
                 nn.ReLU(inplace=True)
             )
             self.category_num = config.category_num
-
+            self.subcat_dense = nn.Sequential(
+                nn.Linear(config.subcategory_num, config.subcategory_vec_dim),
+                nn.ReLU(inplace=True)
+            )
+            self.subcat_num = config.subcategory_num
+            
     def forward(self, news):
 
         """
@@ -59,7 +64,8 @@ class KCNN(nn.Module):
             {
                 "titles": batch_size * num_words_per_news,
                 "entities": batch_size * num_words_per_news,
-                "categories": batch_size
+                "categories": batch_size,
+                "subcategories": batch_size
             }
 
         Return: (batch_size, len(window_sizes) * num_filters (|+category_vec_dim))
@@ -79,7 +85,10 @@ class KCNN(nn.Module):
             categories = news.get('categories')
             categories_vec = torch.eye(n=self.category_num, device=categories.device)[categories]
             categories_vec = self.category_dense(categories_vec)
-            out_vec = torch.cat([out_vec, categories_vec], dim=1)
+            subcats = news.get('subcategories')
+            subcats_vec = torch.eye(n=self.subcat_num, device=subcats.device)[subcats]
+            subcats_vec = self.subcat_dense(subcats_vec)
+            out_vec = torch.cat([out_vec, categories_vec, subcats_vec], dim=1)
         return out_vec
 
 
@@ -88,7 +97,7 @@ class Attention(nn.Module):
         super(Attention, self).__init__()
         in_features = 2 * len(config.window_sizes) * config.num_filters
         if config.use_category:
-            in_features += 2 * config.category_vec_dim
+            in_features += 2 * config.category_vec_dim + 2 * config.subcategory_vec_dim
         self.weight = nn.Sequential(
             nn.Linear(in_features, 256),
             nn.ReLU(inplace=True),

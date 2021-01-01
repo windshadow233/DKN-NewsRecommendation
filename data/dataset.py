@@ -56,9 +56,11 @@ def user_data_collate(one_batch):
     clicked_news_titles = [[] for _ in range(config.num_clicked_news_per_user)]
     clicked_news_entities = [[] for _ in range(config.num_clicked_news_per_user)]
     clicked_news_categories = [[] for _ in range(config.num_clicked_news_per_user)]
+    clicked_news_subcats = [[] for _ in range(config.num_clicked_news_per_user)]
     candidate_news_titles = []
     candidate_news_entities = []
     candidate_news_categories = []
+    candidate_news_subcats = []
     is_click = []
     for data in one_batch:
         candidate = data['candidate_news']
@@ -66,27 +68,33 @@ def user_data_collate(one_batch):
         candidate_news_titles.append(candidate['title'])
         candidate_news_entities.append(candidate['entities'])
         candidate_news_categories.append(candidate['category'])
+        candidate_news_subcats.append(candidate['subcategory'])
         is_click.append(candidate['is_click'])
         for i, one_clicked in enumerate(clicked):
             clicked_titles = one_clicked['title']
             clicked_entities = one_clicked['entities']
             clicked_category = one_clicked['category']
+            clicked_subcat = one_clicked['subcategory']
             clicked_news_titles[i].append(clicked_titles)
             clicked_news_entities[i].append(clicked_entities)
             clicked_news_categories[i].append(clicked_category)
-    clicked_news_titles = list(map(lambda x: torch.stack(x), clicked_news_titles))
-    clicked_news_entities = list(map(lambda x: torch.stack(x), clicked_news_entities))
+            clicked_news_subcats[i].append(clicked_subcat)
+    clicked_news_titles = list(map(lambda x: torch.nn.utils.rnn.pad_sequence(x, batch_first=True), clicked_news_titles))
+    clicked_news_entities = list(map(lambda x: torch.nn.utils.rnn.pad_sequence(x, batch_first=True), clicked_news_entities))
     clicked_news_categories = list(map(lambda x: torch.stack(x), clicked_news_categories))
+    clicked_news_subcats = list(map(lambda x: torch.stack(x), clicked_news_subcats))
     candidate_news = {
         'titles': torch.nn.utils.rnn.pad_sequence(candidate_news_titles, batch_first=True).to(device),
         'entities': torch.nn.utils.rnn.pad_sequence(candidate_news_entities, batch_first=True).to(device),
-        'categories': torch.stack(candidate_news_categories).to(device)
+        'categories': torch.stack(candidate_news_categories).to(device),
+        'subcategories': torch.stack(candidate_news_subcats).to(device)
     }
     clicked_news = [{'titles': titles.to(device),
                      'entities': entities.to(device),
-                     'categories': categories.to(device)}
-                    for titles, entities, categories
-                    in zip(clicked_news_titles, clicked_news_entities, clicked_news_categories)]
+                     'categories': categories.to(device),
+                     'subcategories': subcats.to(device)}
+                    for titles, entities, categories, subcats
+                    in zip(clicked_news_titles, clicked_news_entities, clicked_news_categories, clicked_news_subcats)]
     is_click = torch.stack(is_click).to(device)
     return candidate_news, clicked_news, is_click
 
@@ -123,6 +131,8 @@ class TrainDataset(Dataset):
         self.entity_dict = Dictionary(entity_dict)
         with open('data/categories.json', 'r') as f:
             self.category_dict = json.loads(f.read())
+        with open('data/subcategories.json', 'r') as f:
+            self.subcategory_dict = json.loads(f.read())
         print('Loading data...')
         self.behaviors = pd.read_csv('data/train/behaviors.tsv', sep='\t', header=None).set_index(0)
         self.behaviors.index.name = 'Impression_ID'
@@ -181,6 +191,7 @@ class TrainDataset(Dataset):
         candidate = self.news.loc[candidate_id]
         split_title = split_words(candidate.Title)
         candidate_category = torch.tensor(self.category_dict.get(candidate.Category, 0))
+        candidate_subcat = torch.tensor(self.subcategory_dict.get(candidate.SubCategory, 0))
         candidate_title = self.title_dict.wors2token(split_title)
         entities = candidate.Title_Entities
         entities = [] if pd.isna(entities) else json.loads(entities)
@@ -198,17 +209,19 @@ class TrainDataset(Dataset):
             to_add['title'] = self.title_dict.wors2token(split_title)
             to_add['entities'] = self.entity_dict.wors2token(entities)
             to_add['category'] = torch.tensor(self.category_dict.get(news.Category, 0)).long()
+            to_add['subcategory'] = torch.tensor(self.subcategory_dict.get(news.SubCategory, 0)).long()
             clicked_news.append(to_add)
         # 若clicked_news不够num_clicked_news_per_user条,补0(待考虑)
         pad_vec = torch.zeros(config.num_words_per_news, dtype=torch.long)
-        clicked_news.extend([{'title': pad_vec, 'entities': pad_vec, 'category': torch.tensor(0)}
+        clicked_news.extend([{'title': pad_vec, 'entities': pad_vec, 'category': torch.tensor(0), 'subcategory': torch.tensor(0)}
                              for _ in range(config.num_clicked_news_per_user - len(clicked_news))])
         to_return = {
             'candidate_news': {
                 'title': candidate_title,
                 'entities': candidate_title_entities,
                 'is_click': is_click,
-                'category': candidate_category
+                'category': candidate_category,
+                'subcategory': candidate_subcat
             },
             'clicked_news': clicked_news
         }
@@ -232,6 +245,7 @@ class TestDataset(object):
         self.behaviors = pd.read_csv(f'data/{mode}/behaviors.tsv', sep='\t', header=None).set_index(0).dropna(subset=[3])
         self.behaviors.index.name = 'Impression_ID'
         self.behaviors.columns = ['User_ID', 'Time', 'History', 'Impressions']
+        self.users_id = self.behaviors.User_ID.unique().tolist()
         self.news = pd.read_csv(f'data/{mode}/news.tsv', sep='\t', header=None, index_col=0)
         self.news.index.name = 'News_ID'
         self.news.columns = ['Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title_Entities',
@@ -259,10 +273,6 @@ class TestDataset(object):
             to_add['entities'] = self.entity_dict.wors2token(entities)
             to_add['category'] = torch.tensor(self.category_dict.get(news.Category, 0)).long()
             clicked_news.append(to_add)
-        # 若clicked_news不够num_clicked_news_per_user条,补0(待考虑)
-        pad_vec = torch.zeros(config.num_words_per_news, dtype=torch.long)
-        clicked_news.extend([{'title': pad_vec, 'entities': pad_vec, 'category': torch.tensor(0)}
-                             for _ in range(config.num_clicked_news_per_user - len(clicked_news))])
         for impression in impressions:
             if self.mode == 'test':
                 candidate_id = impression
