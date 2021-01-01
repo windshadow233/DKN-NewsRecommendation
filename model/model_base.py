@@ -68,7 +68,7 @@ class KCNN(nn.Module):
                 "subcategories": batch_size
             }
 
-        Return: (batch_size, len(window_sizes) * num_filters (|+category_vec_dim))
+        Return: (batch_size, len(window_sizes) * num_filters (|+category_vec_dim + subcategory_vec_dim))
         """
 
         titles = news.get('titles')
