@@ -44,7 +44,7 @@ class DKN(nn.Module):
 
         """
 
-        candidate_news_vec = self.kcnn(candidate_news)  # (batch_size, len(window_sizes) * num_filter (|+category_vec_dim))
+        candidate_news_vec = self.kcnn(candidate_news)  # (batch_size, len(window_sizes) * num_filter (|+category_vec_dim + subcategory_vec_dim))
         clicked_news_vec = torch.stack([
             self.kcnn(news) for news in clicked_news
         ])
