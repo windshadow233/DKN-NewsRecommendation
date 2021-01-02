@@ -16,6 +16,7 @@ class DKN(nn.Module):
             nn.ReLU(inplace=True),
             nn.Linear(128, 1)
         )
+        self.to(torch.device(config.device))
 
     def forward(self, candidate_news, clicked_news, sigmoid_at_end=True):
 
