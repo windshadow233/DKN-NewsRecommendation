@@ -276,6 +276,11 @@ class TestDataset(object):
             to_add['category'] = torch.tensor(self.category_dict.get(news.Category, 0)).long()
             to_add['subcategory'] = torch.tensor(self.subcategory_dict.get(news.SubCategory, 0)).long()
             clicked_news.append(to_add)
+        # 若clicked_news不够num_clicked_news_per_user条,补0(待考虑)
+        pad_vec = torch.zeros(config.num_words_per_news, dtype=torch.long)
+        clicked_news.extend(
+            [{'title': pad_vec, 'entities': pad_vec, 'category': torch.tensor(0), 'subcategory': torch.tensor(0)}
+             for _ in range(config.num_clicked_news_per_user - len(clicked_news))])
         for impression in impressions:
             if self.mode == 'test':
                 candidate_id = impression
