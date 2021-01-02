@@ -8,7 +8,9 @@ class DKN(nn.Module):
         self.attention = Attention(config)
         in_features = 2 * len(config.window_sizes) * config.num_filters
         if config.use_category:
-            in_features += 2 * config.category_vec_dim + 2 * config.subcategory_vec_dim
+            in_features += 2 * config.category_vec_dim
+        if config.use_subcategory:
+            in_features += 2 * config.subcategory_vec_dim
         self.click_prob = nn.Sequential(
             nn.Linear(in_features, 256),
             nn.ReLU(inplace=True),

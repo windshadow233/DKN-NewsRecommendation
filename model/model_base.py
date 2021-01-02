@@ -45,16 +45,15 @@ class KCNN(nn.Module):
             for i, x in enumerate(config.window_sizes)
         })
         if config.use_category:
-            self.category_dense = nn.Sequential(
-                nn.Linear(config.category_num, config.category_vec_dim),
+            self.category_embed = nn.Sequential(
+                nn.Embedding(config.category_num, config.category_vec_dim, padding_idx=0),
                 nn.ReLU(inplace=True)
             )
-            self.category_num = config.category_num
-            self.subcat_dense = nn.Sequential(
-                nn.Linear(config.subcategory_num, config.subcategory_vec_dim),
+        if config.use_subcategory:
+            self.subcat_embed = nn.Sequential(
+                nn.Embedding(config.subcategory_num, config.subcategory_vec_dim, padding_idx=0),
                 nn.ReLU(inplace=True)
             )
-            self.subcat_num = config.subcategory_num
 
     def forward(self, news):
 
@@ -81,14 +80,14 @@ class KCNN(nn.Module):
             pooled = activated.max(-1).values
             pooled_vecs.append(pooled)
         out_vec = torch.cat(pooled_vecs, dim=1)
-        if hasattr(self, 'category_dense'):
+        if hasattr(self, 'category_embed'):
             categories = news.get('categories')
-            categories_vec = torch.eye(n=self.category_num, device=categories.device)[categories]
-            categories_vec = self.category_dense(categories_vec)
+            categories_vec = self.category_embed(categories)
+            out_vec = torch.cat([out_vec, categories_vec], dim=1)
+        if hasattr(self, 'subcat_embed'):
             subcats = news.get('subcategories')
-            subcats_vec = torch.eye(n=self.subcat_num, device=subcats.device)[subcats]
-            subcats_vec = self.subcat_dense(subcats_vec)
-            out_vec = torch.cat([out_vec, categories_vec, subcats_vec], dim=1)
+            subcats_vec = self.subcat_embed(subcats)
+            out_vec = torch.cat([out_vec, subcats_vec], dim=1)
         return out_vec
 
 
@@ -97,7 +96,9 @@ class Attention(nn.Module):
         super(Attention, self).__init__()
         in_features = 2 * len(config.window_sizes) * config.num_filters
         if config.use_category:
-            in_features += 2 * config.category_vec_dim + 2 * config.subcategory_vec_dim
+            in_features += 2 * config.category_vec_dim
+        if config.use_subcategory:
+            in_features += 2 * config.subcategory_vec_dim
         self.weight = nn.Sequential(
             nn.Linear(in_features, 256),
             nn.ReLU(inplace=True),
