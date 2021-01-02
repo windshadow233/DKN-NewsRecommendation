@@ -6,9 +6,9 @@ from config import Config
 from data.dataset import TestDataset, user_data_collate
 
 
-config = Config('trained_model/model2/config.json')
+config = Config('trained_model/model1/config.json')
 model = DKN(config, 'data/entities_embedding.pkl')
-model.load_state_dict(torch.load('trained_model/model2/state_dict/model.pkl'))
+model.load_state_dict(torch.load('trained_model/model1/state_dict/model.pkl'))
 model.eval()
 dev_dataset = TestDataset('data/title_words_vocab.json', 'data/entities_vocab.json', mode='dev')
 auc = 0
