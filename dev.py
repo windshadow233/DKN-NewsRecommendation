@@ -15,12 +15,15 @@ model.eval()
 dev_dataset = TestDataset('data/title_words_vocab.json', 'data/entities_vocab.json', mode='dev')
 auc = 0
 with torch.no_grad():
-    for i, data in enumerate(tqdm.tqdm(dev_dataset), 1):
-        next(data)
-        candidate, history, truth = user_data_collate(data)
-        truth = truth.cpu().numpy()
-        pred = model(candidate, history).cpu().numpy()
-        auc_score = roc_auc_score(truth, pred)
-        auc += auc_score
-        print(f'AUC: {auc_score} | Avg: {auc / i}')
+    try:
+        for i, data in enumerate(tqdm.tqdm(dev_dataset), 1):
+            next(data)
+            candidate, history, truth = user_data_collate(data)
+            truth = truth.cpu().numpy()
+            pred = model(candidate, history).cpu().numpy()
+            auc_score = roc_auc_score(truth, pred)
+            auc += auc_score
+            print(f'AUC: {auc_score} | Avg: {auc / i}')
+    except IndexError:
+        pass
 
