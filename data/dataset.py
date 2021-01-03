@@ -244,10 +244,8 @@ class TestDataset(object):
             self.subcategory_dict = json.loads(f.read())
         print('Loading data...')
         # 无history的用户记录另作处理
-        self.behaviors = pd.read_csv(f'data/{mode}/behaviors.tsv', sep='\t', header=None).set_index(0).dropna(subset=[3])
-        self.behaviors.index.name = 'Impression_ID'
-        self.behaviors.columns = ['User_ID', 'Time', 'History', 'Impressions']
-        self.users_id = self.behaviors.User_ID.unique().tolist()
+        self.behaviors = pd.read_csv(f'data/{mode}/behaviors.tsv', sep='\t', header=None).dropna(subset=[3])
+        self.behaviors.columns = ['Impression_ID', 'User_ID', 'Time', 'History', 'Impressions']
         self.news = pd.read_csv(f'data/{mode}/news.tsv', sep='\t', header=None, index_col=0)
         self.news.index.name = 'News_ID'
         self.news.columns = ['Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title_Entities',
@@ -260,6 +258,7 @@ class TestDataset(object):
 
     def __getitem__(self, item):
         behavior = self.behaviors.iloc[item]
+        yield behavior.Impression_ID
         history = behavior.History
         click_history = history.split(' ')
         impressions = behavior.Impressions.split(' ')
