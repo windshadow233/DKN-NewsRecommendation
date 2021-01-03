@@ -11,11 +11,11 @@ torch.manual_seed(10)
 random.seed(10)
 device = torch.device(config.device)
 model = DKN(config, "data/entities_embedding.pkl").to(device)
-train_set = TrainDataset('data/title_words_vocab.json', 'data/entities_vocab.json', positive_rate=0.167)
+train_set = TrainDataset('data/title_words_vocab.json', 'data/entities_vocab.json', positive_rate=0.5)
 loss_fcn = nn.BCEWithLogitsLoss()
 optimizer = Adam(model.parameters(), lr=1e-4, betas=(0.5, 0.98))
 train_loader = DataLoader(train_set, batch_size=64, shuffle=False, collate_fn=user_data_collate)
-epochs = 10
+epochs = 3
 total_step = len(train_loader)
 for epoch in range(epochs):
     for candidate_news, clicked_news, is_click in tqdm.tqdm(train_loader,
@@ -27,3 +27,4 @@ for epoch in range(epochs):
         loss.backward()
         optimizer.step()
         print('\r', loss.item(), flush=True, file=sys.stdout)
+torch.save(model.state_dict(), 'model_state_dict/model.pkl')
