@@ -17,20 +17,19 @@ model.eval()
 test_dataset = TestDataset('data/title_words_vocab.json', 'data/entities_vocab.json', mode='test')
 pred_dict = {}
 with torch.no_grad():
-    with open('prediction.txt', 'w') as f:
-        for data in tqdm.tqdm(test_dataset):
-            try:
-                impression_ID = next(data)
-                candidate, history, _ = user_data_collate(data)
-                pred = model(candidate, history).tolist()
-                rank = pd.Series(pred).rank(method='first', ascending=False).astype(int).to_list()
-                pred_dict[impression_ID] = str(rank)
-            except IndexError:
-                break
+    for data in tqdm.tqdm(test_dataset):
+        try:
+            impression_ID = next(data)
+            candidate, history, _ = user_data_collate(data)
+            pred = model(candidate, history).tolist()
+            rank = pd.Series(pred).rank(method='first', ascending=False).astype(int).to_list()
+            pred_dict[impression_ID] = str(rank)
+        except IndexError:
+            break
 """直接用点击量作为无history用户新闻的score"""
 with open('data/news_clicked_freq_rank.json', 'r') as f:
     news_freq = json.loads(f.read())
-behaviors = pd.read_csv('data/test/behaviors.tsv', sep='\t', header=None)
+behaviors = pd.read_csv('data/test/behaviors.tsv', sep='\t', header=None).set_index(0)
 behaviors = behaviors[behaviors[3].isna()]
 for i in tqdm.tqdm(behaviors.index):
     impressions = behaviors.loc[i][4].split(' ')
