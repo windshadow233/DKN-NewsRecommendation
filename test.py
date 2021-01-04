@@ -1,5 +1,7 @@
 import torch
 import tqdm
+import json
+import numpy as np
 import os
 import pandas as pd
 from model.DKN import DKN
@@ -20,7 +22,25 @@ with torch.no_grad():
                 impression_ID = next(data)
                 candidate, history, _ = user_data_collate(data)
                 pred = model(candidate, history).tolist()
-                rank = pd.Series(pred).rank(ascending=False).astype(int).to_list()
+                rank = pd.Series(pred).rank(method='first', ascending=False).astype(int).to_list()
                 f.write(f'{impression_ID} {rank}\n')
             except IndexError:
                 break
+"""直接用点击量作为无history用户新闻的score"""
+with open('data/news_clicked_freq_rank.json', 'r') as f:
+    news_freq = json.loads(f.read())
+behaviors = pd.read_csv('data/test/behaviors.tsv', sep='\t', header=None)
+behaviors = behaviors[behaviors[3].isna()]
+with open('prediction.txt', 'r') as f:
+    pred_list = f.readlines()
+pred_dict = {int(item.split(' ', 1)[0]): item.split(' ', 1)[1] for item in pred_list}
+for i in tqdm.tqdm(behaviors.index):
+    impressions = behaviors.loc[i][4].split(' ')
+    score = np.array([news_freq.get(impression.split('-')[0], 0) for impression in impressions])
+    rank = pd.Series(score).rank(method='first', ascending=False).astype(int).to_list()
+    pred_dict[i] = str(rank) + '\n'
+pred_list = [(key, value) for key, value in pred_dict.items()]
+pred_list.sort(key=lambda x: x[0])
+pred_list = [' '.join([str(item[0]), item[1]]) for item in pred_list]
+with open('prediction.txt', 'w') as f:
+    f.writelines(pred_list)
