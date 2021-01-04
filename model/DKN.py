@@ -52,7 +52,7 @@ class DKN(nn.Module):
             self.kcnn(news) for news in clicked_news
         ])
         user_embedding = self.attention(candidate_news_vec, clicked_news_vec)
-        # (batch_size, len(window_sizes) * num_filter (|+category_vec_dim))
+        # (batch_size, len(window_sizes) * num_filter (|+category_vec_dim + subcategory_vec_dim))
         click_prob = self.click_prob(torch.cat([user_embedding, candidate_news_vec], dim=1)).squeeze(dim=1)
         if sigmoid_at_end:
             click_prob = click_prob.sigmoid()
