@@ -15,12 +15,12 @@ model.eval()
 test_dataset = TestDataset('data/title_words_vocab.json', 'data/entities_vocab.json', mode='test')
 with torch.no_grad():
     with open('prediction.txt', 'w') as f:
-        try:
-            for data in tqdm.tqdm(test_dataset):
+        for data in tqdm.tqdm(test_dataset):
+            try:
                 impression_ID = next(data)
                 candidate, history, _ = user_data_collate(data)
                 pred = model(candidate, history).tolist()
                 rank = pd.Series(pred).rank(ascending=False).astype(int).to_list()
                 f.write(f'{impression_ID} {rank}\n')
-        except IndexError:
-            pass
+            except IndexError:
+                break
