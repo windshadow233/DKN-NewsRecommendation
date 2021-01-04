@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 import pickle
-from transformers import AutoTokenizer, AutoModel
+# from transformers import AutoTokenizer, AutoModel
 
 
 class Embedding(nn.Module):
