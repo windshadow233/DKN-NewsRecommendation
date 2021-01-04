@@ -15,6 +15,7 @@ model = DKN(config, 'data/entities_embedding.pkl')
 model.load_state_dict(torch.load(os.path.join(model_path, 'state_dict', 'model.pkl')))
 model.eval()
 test_dataset = TestDataset('data/title_words_vocab.json', 'data/entities_vocab.json', mode='test')
+pred_dict = {}
 with torch.no_grad():
     with open('prediction.txt', 'w') as f:
         for data in tqdm.tqdm(test_dataset):
@@ -23,7 +24,7 @@ with torch.no_grad():
                 candidate, history, _ = user_data_collate(data)
                 pred = model(candidate, history).tolist()
                 rank = pd.Series(pred).rank(method='first', ascending=False).astype(int).to_list()
-                f.write(f'{impression_ID} {rank}\n')
+                pred_dict[impression_ID] = str(rank)
             except IndexError:
                 break
 """直接用点击量作为无history用户新闻的score"""
@@ -31,9 +32,6 @@ with open('data/news_clicked_freq_rank.json', 'r') as f:
     news_freq = json.loads(f.read())
 behaviors = pd.read_csv('data/test/behaviors.tsv', sep='\t', header=None)
 behaviors = behaviors[behaviors[3].isna()]
-with open('prediction.txt', 'r') as f:
-    pred_list = f.readlines()
-pred_dict = {int(item.split(' ', 1)[0]): item.split(' ', 1)[1] for item in pred_list}
 for i in tqdm.tqdm(behaviors.index):
     impressions = behaviors.loc[i][4].split(' ')
     score = np.array([news_freq.get(impression.split('-')[0], 0) for impression in impressions])
