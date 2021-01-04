@@ -1,6 +1,9 @@
 import torch
 import tqdm
+import numpy as np
+import json
 import os
+import pandas as pd
 from sklearn.metrics import roc_auc_score
 from model.DKN import DKN
 from config import Config
@@ -26,4 +29,16 @@ with torch.no_grad():
             print(f'AUC: {auc_score} | Avg: {auc / i}')
         except IndexError:
             break
-
+"""直接用点击量作为无history用户新闻的score"""
+with open('data/news_clicked_freq_rank.json', 'r') as f:
+    news_freq = json.loads(f.read())
+behaviors = pd.read_csv('data/dev/behaviors.tsv', sep='\t', header=None)
+behaviors = behaviors[behaviors[3].isna()]
+for impressions in tqdm.tqdm(behaviors[4]):
+    impressions = impressions.split(' ')
+    truth = np.array([int(impression.split('-')[1]) for impression in impressions])
+    score = np.array([news_freq.get(impression.split('-')[0], 0) for impression in impressions])
+    auc_score = roc_auc_score(truth, score)
+    auc += auc_score
+    print(auc_score)
+print(f'Avg: {auc / i + len(behaviors)}')
