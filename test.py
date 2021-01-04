@@ -21,6 +21,6 @@ with torch.no_grad():
                 candidate, history, _ = user_data_collate(data)
                 pred = model(candidate, history).tolist()
                 rank = pd.Series(pred).rank(ascending=False).astype(int).to_list()
-                f.write(f'{impression_ID} {str(rank)}\n')
+                f.write(f'{impression_ID} {rank}\n')
         except IndexError:
             pass
