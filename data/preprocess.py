@@ -74,9 +74,12 @@ if not os.path.exists('title_words_vocab.json'):
 """统计新闻点击数并排序"""
 if not os.path.exists('news_clicked_freq_rank.json'):
     news_freq = Counter()
-    for history in tqdm.tqdm(behaviors.History, total=len(behaviors)):
+    for history, impressions in tqdm.tqdm(zip(behaviors.History, behaviors.Impressions), total=len(behaviors)):
         if not pd.isna(history):
             history = history.split(' ')
             news_freq.update(history)
+        impressions = impressions.split(' ')
+        clicked = [impression.split('-')[0] for impression in impressions if impression.split('-')[1] == '1']
+        news_freq.update(clicked)
     with open('news_clicked_freq_rank.json', 'w') as f:
         f.write(json.dumps(news_freq))
