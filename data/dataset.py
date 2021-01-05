@@ -11,7 +11,7 @@ import time
 import tqdm
 from data.utils import *
 from config import config
-from transformers import AutoTokenizer
+# from transformers import AutoTokenizer
 
 
 device = torch.device(config.device)
@@ -139,9 +139,6 @@ class TrainDataset(Dataset):
         self.behaviors.columns = ['User_ID', 'Time', 'History', 'Impressions']
         # 丢弃无价值数据
         self.behaviors.dropna(subset=['History'], inplace=True)
-        self.users_id = self.behaviors.User_ID.unique().tolist()
-        # 先按User_ID分组,以加快读取速度
-        self.behaviors = self.behaviors.groupby(by='User_ID')
         self.news = pd.read_csv('data/train/news.tsv', sep='\t', header=None, index_col=0)
         self.news.index.name = 'News_ID'
         self.news.columns = ['Category', 'SubCategory', 'Title', 'Abstract', 'URL', 'Title_Entities',
@@ -169,14 +166,10 @@ class TrainDataset(Dataset):
                 ]
             }
         """
-        user_id = self.users_id[item]
-        behaviors = self.behaviors.get_group(user_id)
-        impressions = []
-        for i, (_, behavior) in enumerate(behaviors.iterrows()):
-            if i == 0:
-                history = behavior.History
-                click_history = history.split(' ')
-            impressions.extend(behavior.Impressions.split(' '))
+        behaviors = self.behaviors.iloc[item]
+        history = behaviors.History
+        click_history = history.split(' ')
+        impressions = behaviors.Impressions.split(' ')
         ####################### candidate news #######################
         # 以positive_rate概率抽取正例
         positive = list(filter(lambda x: x[-1] == '1', impressions))
@@ -228,7 +221,7 @@ class TrainDataset(Dataset):
         return to_return
 
     def __len__(self):
-        return len(self.users_id)
+        return len(self.behaviors)
 
 
 class TestDataset(object):
