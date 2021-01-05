@@ -30,7 +30,7 @@ with torch.no_grad():
         except IndexError:
             break
 """直接用点击量作为无history用户新闻的score"""
-with open('data/news_clicked_freq_rank.json', 'r') as f:
+with open('data/news_clicked_freq.json', 'r') as f:
     news_freq = json.loads(f.read())
 behaviors = pd.read_csv('data/dev/behaviors.tsv', sep='\t', header=None)
 behaviors = behaviors[behaviors[3].isna()]

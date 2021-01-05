@@ -9,7 +9,7 @@ from config import Config
 from data.dataset import TestDataset, user_data_collate
 
 
-model_path = 'trained_model/model2'
+model_path = 'trained_model/model3'
 config = Config(os.path.join(model_path, 'config.json'))
 model = DKN(config, 'data/entities_embedding.pkl')
 model.load_state_dict(torch.load(os.path.join(model_path, 'state_dict', 'model.pkl')))
@@ -27,7 +27,7 @@ with torch.no_grad():
         except IndexError:
             break
 """直接用点击量作为无history用户新闻的score"""
-with open('data/news_clicked_freq_rank.json', 'r') as f:
+with open('data/news_clicked_freq.json', 'r') as f:
     news_freq = json.loads(f.read())
 behaviors = pd.read_csv('data/test/behaviors.tsv', sep='\t', header=None).set_index(0)
 behaviors = behaviors[behaviors[3].isna()]
