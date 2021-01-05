@@ -188,7 +188,7 @@ class TrainDataset(Dataset):
         candidate_title = self.title_dict.wors2token(split_title)
         entities = candidate.Title_Entities
         entities = [] if pd.isna(entities) else json.loads(entities)
-        entities = get_entities_from_title(split_title, entities)
+        entities = alignment(split_title, entities)
         candidate_title_entities = self.entity_dict.wors2token(entities)
         ######################## clicked news ########################
         clicked_news = []
@@ -198,7 +198,7 @@ class TrainDataset(Dataset):
             split_title = split_words(news.Title)
             entities = news.Title_Entities
             entities = [] if pd.isna(entities) else json.loads(entities)
-            entities = get_entities_from_title(split_title, entities)
+            entities = alignment(split_title, entities)
             to_add['title'] = self.title_dict.wors2token(split_title)
             to_add['entities'] = self.entity_dict.wors2token(entities)
             to_add['category'] = torch.tensor(self.category_dict.get(news.Category, 0)).long()
@@ -262,7 +262,7 @@ class TestDataset(object):
             split_title = split_words(news.Title)
             entities = news.Title_Entities
             entities = [] if pd.isna(entities) else json.loads(entities)
-            entities = get_entities_from_title(split_title, entities)
+            entities = alignment(split_title, entities)
             to_add['title'] = self.title_dict.wors2token(split_title)
             to_add['entities'] = self.entity_dict.wors2token(entities)
             to_add['category'] = torch.tensor(self.category_dict.get(news.Category, 0)).long()
@@ -287,7 +287,7 @@ class TestDataset(object):
             candidate_title = self.title_dict.wors2token(split_title)
             entities = candidate.Title_Entities
             entities = [] if pd.isna(entities) else json.loads(entities)
-            entities = get_entities_from_title(split_title, entities)
+            entities = alignment(split_title, entities)
             candidate_title_entities = self.entity_dict.wors2token(entities)
             to_return = {
                 'candidate_news': {

@@ -31,7 +31,7 @@ def split_words(words):
     return split
 
 
-def get_entities_from_title(title, entities):
+def alignment(title, entities):
     """
     此函数将title每个单词对应到一个entity(若不存在对应则对应到<pad>)
     :param title: 经分词后的title
