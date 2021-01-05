@@ -37,6 +37,6 @@ for i in tqdm.tqdm(behaviors.index):
     rank = pd.Series(score).rank(method='first', ascending=False).astype(int).to_list()
     pred_list.append((i, str(rank) + '\n'))
 pred_list.sort(key=lambda x: x[0])
-pred_list = [' '.join([str(item[0]), item[1]]) for item in pred_list]
+pred_list = [' '.join([str(impression_id), rank]) for impression_id, rank in pred_list]
 with open('prediction.txt', 'w') as f:
     f.writelines(pred_list)
