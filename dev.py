@@ -41,4 +41,4 @@ for impressions in tqdm.tqdm(behaviors[4]):
     auc_score = roc_auc_score(truth, score)
     auc += auc_score
     print(auc_score)
-print(f'Avg: {auc / i + len(behaviors)}')
+print(f'Avg: {auc / (i + len(behaviors))}')
