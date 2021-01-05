@@ -40,5 +40,4 @@ for impressions in tqdm.tqdm(behaviors[4]):
     score = np.array([news_freq.get(impression.split('-')[0], 0) for impression in impressions])
     auc_score = roc_auc_score(truth, score)
     auc += auc_score
-    print(auc_score)
 print(f'Avg: {auc / (i + len(behaviors))}')
