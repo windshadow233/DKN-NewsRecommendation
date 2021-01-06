@@ -28,29 +28,27 @@ if not os.path.exists('categories.json'):
         category = news.Category.unique()
         f.write(json.dumps(dict(zip(category, range(1, len(category) + 1)))))
 
-"""生成标题的实体嵌入文件"""
+"""生成标题的实体嵌入文件与标题实体词典"""
 if not os.path.exists('entities_embedding.pkl'):
-    with open("train/entity_embedding.vec", "r") as f:
-        vec = []
-        lines = f.readlines()
-        for line in tqdm.tqdm(lines):
-            line = line.strip().split("\t")
-            vec.append(np.array([float(item) for item in line[1:]]))
-        vec.insert(0, np.zeros(shape=(len(vec[-1]))))
-        vec.insert(0, np.zeros(shape=(len(vec[-1]))))
-        vec = np.stack(vec)
+    with open("train/entity_embedding.vec", "r") as f,\
+            open("test/entity_embedding.vec", "r") as g,\
+            open("dev/entity_embedding.vec", "r") as h:
+        d = {'<pad>': np.zeros(shape=(100,)),
+             '<unk>': np.zeros(shape=(100,))}
+        for file in [f, g, h]:
+            lines = file.readlines()
+            for line in tqdm.tqdm(lines):
+                ID, *vec = line.strip().split("\t")
+                d[ID] = np.array(vec).astype(float)
+        entities = []
+        vecs = []
+        for ID, vec in tqdm.tqdm(d.items()):
+            entities.append(ID)
+            vecs.append(vec)
+        vecs = np.stack(vecs)
 
     with open('entities_embedding.pkl', 'wb') as f:
-        f.write(pickle.dumps(vec))
-
-"""生成标题实体词典"""
-if not os.path.exists('entities_vocab.json'):
-    entities = ['<pad>', '<unk>']
-    with open("train/entity_embedding.vec", "r") as f:
-        lines = f.readlines()
-        for line in tqdm.tqdm(lines):
-            line = line.strip().split("\t")
-            entities.append(line[0])
+        f.write(pickle.dumps(vecs))
     entities = dict(zip(entities, range(len(entities))))
     with open('entities_vocab.json', 'w') as f:
         f.write(json.dumps(entities))
