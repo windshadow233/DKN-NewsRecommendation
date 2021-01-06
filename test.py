@@ -33,7 +33,7 @@ behaviors = pd.read_csv('data/test/behaviors.tsv', sep='\t', header=None).set_in
 behaviors = behaviors[behaviors[3].isna()]
 for i in tqdm.tqdm(behaviors.index):
     impressions = behaviors.loc[i][4].split(' ')
-    score = np.array([news_freq.get(impression.split('-')[0], 0) for impression in impressions])
+    score = [news_freq.get(impression.split('-')[0], 0) for impression in impressions]
     rank = pd.Series(score).rank(method='first', ascending=False).astype(int).to_list()
     pred_list.append((i, str(rank) + '\n'))
 pred_list.sort(key=lambda x: x[0])
